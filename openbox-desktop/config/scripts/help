@@ -1,0 +1,91 @@
+#!/bin/bash
+
+RC_XML="$HOME/.config/openbox/rc.xml"
+THEME_FILE="$HOME/.config/openbox/rofi/keybinds.rasi"
+
+rows=$(python3 <<'PY'
+import os, html
+
+rc_path = os.path.expanduser("~/.config/openbox/rc.xml")
+ACCENT = "#ff8f40"
+KEY_COLOR = "#78a9ff"
+
+MOD = {"W": "Super", "S": "Shift", "C": "Ctrl", "A": "Alt"}
+
+def translate(k):
+    parts = k.split("-")
+    out = [MOD.get(p, p) for p in parts]
+    return " + ".join(out)
+
+def esc(s):
+    return html.escape(s, quote=False)
+
+with open(rc_path, encoding="utf-8") as f:
+    lines = f.readlines()
+
+inside_keyboard = False
+inside_keybind = False
+current_section = None
+sections = {}
+order = []
+key = command = action = ""
+
+for line in lines:
+    stripped = line.strip()
+
+    if "<keyboard>" in stripped:
+        inside_keyboard = True
+        continue
+    if "</keyboard>" in stripped:
+        inside_keyboard = False
+        continue
+    if not inside_keyboard:
+        continue
+
+    if stripped.startswith("<!--") and "-->" in stripped:
+        comment = stripped.replace("<!--", "").replace("-->", "").strip()
+        current_section = comment.upper()
+        if current_section not in sections:
+            sections[current_section] = []
+            order.append(current_section)
+        continue
+
+    if stripped.startswith("<keybind key="):
+        key = stripped.split('"')[1]
+        command = action = ""
+        inside_keybind = True
+        continue
+
+    if inside_keybind and "<command>" in stripped:
+        command = stripped.replace("<command>", "").replace("</command>", "").strip()
+        continue
+
+    if inside_keybind and "<action name=" in stripped:
+        action = stripped.split('"')[1]
+        continue
+
+    if inside_keybind and ("<to>" in stripped or "<direction>" in stripped):
+        arg = (stripped.replace("<to>", "").replace("</to>", "")
+                      .replace("<direction>", "").replace("</direction>", "").strip())
+        action = f"{action} {arg}".strip()
+        continue
+
+    if stripped == "</keybind>":
+        label = command if command else action
+        if key and label and current_section is not None:
+            sections[current_section].append((translate(key), label))
+        inside_keybind = False
+        key = command = action = ""
+
+for section in order:
+    entries = sections[section]
+    if not entries:
+        continue
+    print(f'<span size="large" weight="bold" foreground="{ACCENT}">── {esc(section)} ──</span>')
+    for k, label in entries:
+        print(f'<span foreground="{KEY_COLOR}">{esc(k):<30}</span>  {esc(label)}')
+PY
+)
+
+echo "$rows" | rofi -dmenu -markup-rows -i -p "Openbox Keybindings" \
+    -line-padding 4 -hide-scrollbar -theme "$THEME_FILE"

@@ -1,0 +1,20 @@
+#!/bin/sh
+
+#
+# usage: set-wallpaper
+
+set -u
+
+IMG="$1" BG="$2" 
+[ -f "$IMG" ] || { echo "no such wallpaper: $IMG" >&2; exit 1; }
+
+# Serialize concurrent runs — the last pick wins whole. Spawned daemons
+# must not inherit fd 9 (the 9>&- below) or the lock outlives the script;
+# the bounded wait turns a leaked lock into a delay, not a deadlock.
+exec 9>"${XDG_RUNTIME_DIR:-/tmp}/set-wallpaper.lock"
+flock -w 60 9 || echo "set-wallpaper: lock timeout, proceeding unlocked" >&2
+
+# 6. Wallpaper now + persisted into autostart so it survives logins. The
+#    dunst symlink follows the active session's config.
+feh --bg-fill "$IMG"
+sed -i "s|feh --bg-fill.*|feh --bg-fill \$XDG_CONFIG_HOME/wallpaper/$(basename "$IMG") \&|" "$XDG_CONFIG_HOME/autostart"

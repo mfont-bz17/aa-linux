@@ -1,0 +1,26 @@
+#
+# Set system-wide environment variables here for Openbox
+# User-specific variables should be placed in $HOME/.config/openbox/environment
+#
+
+# To set your language for displaying messages and time/date formats, use the following:
+LANG=ca_ES.UTF8
+
+# To set your keyboard layout, you need to modify your X config:
+# http://www.google.com/search?q=how+to+set+keyboard+layout+xorg
+
+# ─── HiDPI / 4K displays ──────────────────────────────────────────────
+# There's no single scaling knob — each toolkit has to be told separately.
+# If type is tiny on a 4K screen, uncomment this whole block and log out /
+# back in. This file is sourced before openbox starts, so the whole session
+# (including apps launched from the menu and keybinds) inherits the settings.
+#
+# The values give ~200% (good for a 4K laptop or 27"). For ~150%, use
+# Xft.dpi 144, drop GDK_SCALE, and set the cursor sizes to 36.
+#
+# printf 'Xft.dpi: 192\nXcursor.size: 48\n' | xrdb -merge   # X apps, fonts + cursor
+# export GDK_SCALE=2          # GTK app widgets (thunar, geany)
+# export GDK_DPI_SCALE=0.5    # cancel GTK's double font scaling on top of GDK_SCALE
+# export QT_AUTO_SCREEN_SCALE_FACTOR=1   # Qt apps follow Xft.dpi
+# export XCURSOR_SIZE=48
+# ──────────────────────────────────────────────────────────────────────

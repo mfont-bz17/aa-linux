@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# sensors — toggle the aa-linux sensor dashboard (its own quickshell
+# instance, separate from the bar). Reads /tmp/aa-linux-sensors.json, or
+# whatever AA_SENSOR_FILE points at.
+
+P="$(dirname "$(dirname "$(readlink -f "$0")")")/quickshell-sensors"
+
+if pgrep -f "qs -p $P" >/dev/null 2>&1; then
+    qs -p "$P" kill
+else
+    # openbox: windows float natively, no placement rule needed
+    exec qs -p "$P" -d -n
+fi

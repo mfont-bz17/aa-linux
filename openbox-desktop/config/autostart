@@ -1,0 +1,9 @@
+picom --config $XDG_CONFIG_HOME/picom/picom.conf -b &
+feh --bg-fill $XDG_CONFIG_HOME/wallpaper/1.jpg &
+
+qs -p $XDG_CONFIG_HOME/quickshell -d -n >/dev/null 2>&1 &
+# Openbox clamps the freshly mapped bar into rc.xml <margins>; snap it back
+# to the monitor edge (see scripts/bar for the full story).
+$XDG_CONFIG_HOME/scripts/bar place >/dev/null 2>&1 &
+sleep 1 && $XDG_CONFIG_HOME/scripts/ob-grid $XDG_CONFIG_HOME/app-grid.yaml &
+

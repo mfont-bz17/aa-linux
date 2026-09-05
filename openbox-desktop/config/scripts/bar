@@ -1,0 +1,105 @@
+#!/bin/sh
+
+# bar — quickshell helper. Plain `qs` can't find this config (it lives in
+# ~/.config/bspwm/quickshell, not the default path), so every invocation
+# needs -p; this saves typing it.
+#   bar restart   kill + relaunch the bar (default)
+#   bar place     snap bar windows back to their monitor edge (see below)
+#   bar log       tail the instance log
+#   bar <args>    any other qs subcommand, e.g. `bar ipc show`
+
+P="$(dirname "$(dirname "$(readlink -f "$0")")")/quickshell"
+
+# Some WMs re-place dock windows at map time instead of honoring the
+# position the bar asked for — openbox clamps docks inside its rc.xml
+# <margins>, shifting the bar away from its edge by the margin amount.
+# For a left bar this shifts it right by the left margin; for a top bar
+# it was the top margin. A move requested *after* the map is honored (and
+# survives `openbox --reconfigure`), so this snaps every bar window back
+# to the edge of the monitor it overlaps most. Targets come from xrandr
+# and each window's own strut — nothing hardcoded, any monitor layout
+# works. Under WMs that place docks correctly (bspwm) every window is
+# already at its target and this is a no-op.
+# `place fast` skips the fresh-window waits — for re-placing an
+# already-mapped bar after a resize, where every sleep is visible twitch.
+place() {
+    fast=${1:-}
+    tries=0
+    wins=""
+    while [ -z "$wins" ]; do
+        wins=$(xprop -root _NET_CLIENT_LIST 2>/dev/null | grep -o '0x[0-9a-f]*' \
+            | while read -r w; do
+                  xprop -id "$w" _NET_WM_NAME 2>/dev/null \
+                      | grep -q '"quickshell"' && echo "$w"
+              done)
+        [ -n "$wins" ] && break
+        [ -n "$fast" ] && return 1
+        tries=$((tries + 1))
+        [ "$tries" -ge 50 ] && return 1
+        sleep 0.2
+    done
+    [ -n "$fast" ] || sleep 0.3   # let the WM finish managing the fresh window(s)
+
+    # one "width height x y" line per monitor
+    mons=$(xrandr --listmonitors | awk 'NR > 1 {
+        split($3, g, "+")
+        split(g[1], d, "x")
+        sub("/.*", "", d[1]); sub("/.*", "", d[2])
+        print d[1], d[2], g[2], g[3]
+    }')
+    [ -n "$mons" ] || return 1
+
+    for w in $wins; do
+        # bars carry a strut; skips popups and other shell windows
+        strut=$(xprop -id "$w" _NET_WM_STRUT_PARTIAL 2>/dev/null | sed -n 's/.*= //p')
+        [ -n "$strut" ] || continue
+        left=$(printf '%s' "$strut" | cut -d, -f1 | tr -d ' ')
+        right=$(printf '%s' "$strut" | cut -d, -f2 | tr -d ' ')
+        top=$(printf '%s' "$strut" | cut -d, -f3 | tr -d ' ')
+        bottom=$(printf '%s' "$strut" | cut -d, -f4 | tr -d ' ')
+
+        eval "$(xdotool getwindowgeometry --shell "$w")"   # sets X Y WIDTH HEIGHT
+
+        tx=""; ty=""; besta=0
+        while read -r mw mh mx my; do
+            l=$X; [ "$mx" -gt "$l" ] && l=$mx
+            r=$((X + WIDTH)); [ $((mx + mw)) -lt "$r" ] && r=$((mx + mw))
+            t=$Y; [ "$my" -gt "$t" ] && t=$my
+            b=$((Y + HEIGHT)); [ $((my + mh)) -lt "$b" ] && b=$((my + mh))
+            [ "$r" -gt "$l" ] && [ "$b" -gt "$t" ] || continue
+            a=$(((r - l) * (b - t)))
+            if [ "$a" -gt "$besta" ]; then
+                besta=$a
+                # left strut → tx at monitor left, right strut → at right edge
+                if [ "${left:-0}" -gt 0 ]; then
+                    tx=$mx
+                elif [ "${right:-0}" -gt 0 ]; then
+                    tx=$((mx + mw - WIDTH))
+                else
+                    tx=$mx
+                fi
+                if [ "${bottom:-0}" -gt 0 ]; then
+                    ty=$((my + mh - HEIGHT))
+                elif [ "${top:-0}" -gt 0 ]; then
+                    ty=$my
+                else
+                    # vertical bars (left/right) span full height
+                    ty=$my
+                fi
+            fi
+        done <<EOF
+$mons
+EOF
+        [ -n "$tx" ] || continue
+        if [ "$X" -ne "$tx" ] || [ "$Y" -ne "$ty" ]; then
+            xdotool windowmove "$w" "$tx" "$ty"
+        fi
+    done
+}
+
+case "${1:-restart}" in
+    restart) qs -p "$P" kill 2>/dev/null; sleep 0.5; (place >/dev/null 2>&1 &); exec qs -p "$P" -d -n ;;
+    place)   place "$2" ;;
+    log)     exec qs -p "$P" log ;;
+    *)       exec qs -p "$P" "$@" ;;
+esac

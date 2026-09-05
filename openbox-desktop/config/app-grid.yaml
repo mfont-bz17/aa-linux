@@ -1,0 +1,27 @@
+gap: 10
+aliases:
+  tm: "xterm"
+workspaces:
+  - id: 1
+    name: w1
+    layout:
+      - [tm]
+  - id: 2
+    name: w2
+    layout:
+      - [xterm, xterm]
+  - id: 3
+    name: w3
+    layout:
+      - [xterm, xterm]
+      - [xterm, ]
+  - id: 4
+    name: w4
+    layout:
+      - [xterm, xterm]
+      - [xterm, xterm]
+  - id: 5
+    name: d5
+    layout:
+      - [xterm, xterm, xterm]
+      - [xterm, xterm, xterm]

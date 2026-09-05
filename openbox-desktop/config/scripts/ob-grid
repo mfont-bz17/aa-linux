@@ -1,0 +1,697 @@
+#!/usr/bin/env python3
+"""ob-grid - single-file YAML grid parser and window launcher (matrix B)"""
+import re
+import shutil
+import shlex
+import argparse
+import sys
+import os
+import subprocess
+import time
+from dataclasses import dataclass, field
+from typing import List, Dict, Tuple, Optional
+
+# --- common dataclasses ---
+@dataclass
+class Cell:
+    row: int
+    col: int
+    raw_text: str
+    expanded_cmd: str
+    argv: List[str]
+    exe: str
+    x: int = 0
+    y: int = 0
+    w: int = 0
+    h: int = 0
+    top_row: int = 0
+    row_span: int = 1
+
+@dataclass
+class Workspace:
+    id: int
+    name: str
+    cells: List[Cell] = field(default_factory=list)
+    col_weights: List[int] = field(default_factory=list)
+    row_weights: List[int] = field(default_factory=list)
+    cols: int = 0
+    rows: int = 0
+    gap: Optional[int] = None
+
+def resolve_cell_text(raw_text: str, aliases: Dict[str, str]) -> Tuple[str, List[str], str]:
+    raw = raw_text.strip()
+    if not raw:
+        return "", [], ""
+    base = raw.split()[0]
+    if shutil.which(base) is not None:
+        expanded = raw
+    elif raw in aliases:
+        expanded = aliases[raw]
+    else:
+        expanded = raw
+    try:
+        argv = shlex.split(expanded)
+    except ValueError:
+        argv = expanded.split()
+    exe = argv[0] if argv else expanded
+    return expanded, argv, exe
+
+# --- yaml parser (matrix B) ---
+def _parse_scalar(val: str):
+    val = val.strip()
+    if not val:
+        return None
+    if (val.startswith('"') and val.endswith('"')) or (val.startswith("'") and val.endswith("'")):
+        return val[1:-1]
+    if val.startswith('[') and val.endswith(']'):
+        inner = val[1:-1].strip()
+        if not inner:
+            return []
+        parts = []
+        cur = ""
+        in_quote = False
+        quote_char = None
+        for ch in inner:
+            if ch in ('"', "'") and not in_quote:
+                in_quote = True
+                quote_char = ch
+                cur += ch
+            elif ch == quote_char and in_quote:
+                in_quote = False
+                cur += ch
+            elif ch == ',' and not in_quote:
+                parts.append(cur.strip())
+                cur = ""
+            else:
+                cur += ch
+        if inner.endswith(','):
+            parts.append(cur.strip())
+        elif cur:
+            parts.append(cur.strip())
+        res = []
+        for p in parts:
+            p = p.strip()
+            if (p.startswith('"') and p.endswith('"')) or (p.startswith("'") and p.endswith("'")):
+                p = p[1:-1]
+            if p.lower() == 'null' or p == '~' or p == '':
+                res.append(None)
+            else:
+                res.append(p)
+        return res
+    if re.match(r'^-?\d+$', val):
+        try:
+            return int(val)
+        except:
+            pass
+    if re.match(r'^-?\d+\.\d+$', val):
+        try:
+            return float(val)
+        except:
+            pass
+    if val.lower() in ('true', 'false'):
+        return val.lower() == 'true'
+    if val.lower() in ('null', '~', 'nil'):
+        return None
+    return val
+
+def parse_simple_yaml(path: str) -> Dict:
+    with open(path, 'r') as f:
+        raw_lines = f.readlines()
+    lines = []
+    for line in raw_lines:
+        stripped = line.rstrip('\n')
+        if not stripped.strip() or stripped.lstrip().startswith('#'):
+            if stripped.strip().startswith('#'):
+                continue
+        lines.append(stripped)
+    root = {}
+    stack = [(root, -1)]
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        if not line.strip():
+            i += 1
+            continue
+        indent = (len(line) - len(line.lstrip(' '))) // 2
+        content = line.strip()
+        while stack and stack[-1][1] >= indent:
+            stack.pop()
+        if not stack:
+            stack.append((root, -1))
+        parent, parent_indent = stack[-1]
+        if content.startswith('- '):
+            if not isinstance(parent, list):
+                raise ValueError(f"line {i+1}: list item without list parent: {line}")
+            item_str = content[2:].strip()
+            if not item_str:
+                new_dict = {}
+                parent.append(new_dict)
+                stack.append((new_dict, indent))
+            elif ':' in item_str and not item_str.startswith('['):
+                new_dict = {}
+                parent.append(new_dict)
+                stack.append((new_dict, indent))
+                k, v = item_str.split(':', 1)
+                k = k.strip()
+                v = v.strip()
+                parsed = _parse_scalar(v) if v else None
+                if v == "":
+                    if i+1 < len(lines):
+                        next_line = lines[i+1]
+                        next_content = next_line.strip()
+                        if next_content.startswith('- '):
+                            new_dict[k] = []
+                            stack.append((new_dict[k], indent+1))
+                        else:
+                            new_dict[k] = {}
+                            stack.append((new_dict[k], indent+1))
+                    else:
+                        new_dict[k] = None
+                else:
+                    new_dict[k] = parsed
+            else:
+                parsed = _parse_scalar(item_str)
+                parent.append(parsed)
+            i += 1
+            continue
+        if ':' in content:
+            k, v = content.split(':', 1)
+            k = k.strip()
+            v = v.strip()
+            if isinstance(parent, list):
+                raise ValueError(f"line {i+1}: dict entry inside list without dict: {line}")
+            if v == "":
+                j = i+1
+                while j < len(lines) and not lines[j].strip():
+                    j += 1
+                if j < len(lines):
+                    next_content = lines[j].strip()
+                    if next_content.startswith('- '):
+                        new_list = []
+                        parent[k] = new_list
+                        stack.append((new_list, indent))
+                    else:
+                        new_dict = {}
+                        parent[k] = new_dict
+                        stack.append((new_dict, indent))
+                else:
+                    parent[k] = None
+            else:
+                parsed = _parse_scalar(v)
+                parent[k] = parsed
+            i += 1
+            continue
+        i += 1
+    return root
+
+def _to_int(x):
+    if x is None:
+        return None
+    try:
+        return int(x)
+    except (TypeError, ValueError):
+        return None
+
+def parse_yaml(path: str) -> Tuple[List[Workspace], Dict[str, str], Optional[int]]:
+    data = parse_simple_yaml(path)
+    aliases = {}
+    if 'aliases' in data and isinstance(data['aliases'], dict):
+        for k, v in data['aliases'].items():
+            if v is not None:
+                aliases[str(k)] = str(v)
+    global_gap = _to_int(data.get('gap'))
+    workspaces_raw = data.get('workspaces', [])
+    if not isinstance(workspaces_raw, list):
+        raise ValueError(f"{path}: workspaces should be a list")
+    workspaces: List[Workspace] = []
+    for idx, ws_raw in enumerate(workspaces_raw):
+        if not isinstance(ws_raw, dict):
+            raise ValueError(f"workspace {idx} should be a dict")
+        ws_id_raw = ws_raw.get('id', idx+1)
+        try:
+            ws_id = int(ws_id_raw) - 1 if int(ws_id_raw) != 0 else 0
+            if ws_id < 0:
+                ws_id = 0
+        except:
+            ws_id = idx
+        ws_name = str(ws_raw.get('name', '')) if ws_raw.get('name') else ""
+        ws_gap = _to_int(ws_raw.get('gap'))
+        layout = ws_raw.get('layout')
+        if layout is None:
+            raise ValueError(f"workspace {ws_id+1}: missing layout")
+        if not isinstance(layout, list):
+            raise ValueError(f"workspace {ws_id+1}: layout should be list of rows")
+        rows = len(layout)
+        if rows == 0:
+            raise ValueError(f"workspace {ws_id+1}: layout empty")
+        first_row = layout[0]
+        if not isinstance(first_row, list):
+            raise ValueError(f"workspace {ws_id+1}: layout rows should be lists")
+        cols = len(first_row)
+        for r in layout:
+            if not isinstance(r, list):
+                raise ValueError(f"workspace {ws_id+1}: layout row not list")
+            if len(r) != cols:
+                raise ValueError(f"workspace {ws_id+1}: all rows must have same cols, got {len(r)} vs {cols}")
+        col_weights = ws_raw.get('col_weights')
+        row_weights = ws_raw.get('row_weights')
+        if col_weights is None:
+            col_weights = [1]*cols
+        else:
+            if not isinstance(col_weights, list):
+                raise ValueError(f"workspace {ws_id+1}: col_weights should be list")
+            if len(col_weights) != cols:
+                raise ValueError(f"col_weights length {len(col_weights)} != cols {cols}")
+            col_weights = [int(x) for x in col_weights]
+        if row_weights is None:
+            row_weights = [1]*rows
+        else:
+            if not isinstance(row_weights, list):
+                raise ValueError(f"workspace {ws_id+1}: row_weights should be list")
+            if len(row_weights) != rows:
+                raise ValueError(f"row_weights length {len(row_weights)} != rows {rows}")
+            row_weights = [int(x) for x in row_weights]
+        ws = Workspace(id=ws_id, name=ws_name,
+                       col_weights=col_weights, row_weights=row_weights,
+                       cols=cols, rows=rows,
+                       gap=ws_gap)
+        for r in range(rows):
+            for c in range(cols):
+                raw_val = layout[r][c]
+                if raw_val is None or (isinstance(raw_val, str) and raw_val.strip() == ""):
+                    continue
+                if isinstance(raw_val, dict):
+                    raw_text = str(raw_val.get('cmd', ''))
+                else:
+                    raw_text = str(raw_val).strip()
+                    if not raw_text:
+                        continue
+                expanded, argv, exe = resolve_cell_text(raw_text, aliases)
+                cell = Cell(row=r, col=c, raw_text=raw_text,
+                            expanded_cmd=expanded, argv=argv, exe=exe)
+                ws.cells.append(cell)
+        for cell in ws.cells:
+            top_row, row_span = compute_cell_span(ws, cell)
+            cell.top_row = top_row
+            cell.row_span = row_span
+        workspaces.append(ws)
+    if not workspaces:
+        raise ValueError(f"{path}: no workspaces found")
+    return workspaces, aliases, global_gap
+
+# --- layout ---
+def compute_cell_span(ws: Workspace, cell: Cell) -> Tuple[int, int]:
+    """Return (top_row, row_span) so the cell expands over empty rows in its
+    column. Rows above a cell with no upper neighbour are absorbed upward;
+    empty rows between two neighbours are shared (upper cell takes the odd one)."""
+    rows_in_col = sorted(c.row for c in ws.cells if c.col == cell.col)
+    idx = rows_in_col.index(cell.row)
+    prev_r = rows_in_col[idx-1] if idx > 0 else -1
+    next_r = rows_in_col[idx+1] if idx+1 < len(rows_in_col) else ws.rows
+    if prev_r < 0:
+        top = 0
+    else:
+        gap = cell.row - prev_r - 1
+        top = cell.row - gap // 2
+    if next_r >= ws.rows:
+        bottom = ws.rows - 1
+    else:
+        gap = next_r - cell.row - 1
+        bottom = cell.row + (gap + 1) // 2
+    return top, bottom - top + 1
+
+def compute_layout_for_workspace(ws: Workspace, workarea: Tuple[int,int,int,int], gap: int, display: Tuple[int,int] = None):
+    wa_x, wa_y, wa_w, wa_h = workarea
+    cols = ws.cols
+    rows = ws.rows
+    if cols == 0 or rows == 0:
+        return
+    if display is not None:
+        disp_w, disp_h = display
+    else:
+        disp_w, disp_h = wa_w, wa_h
+    available_w = wa_w - (cols - 1)*gap
+    available_h = wa_h - (rows - 1)*gap
+    col_weights = ws.col_weights
+    row_weights = ws.row_weights
+    total_w = sum(col_weights)
+    total_h = sum(row_weights)
+    if available_w <= 0:
+        available_w = wa_w
+    if available_h <= 0:
+        available_h = wa_h
+    col_pixel = [available_w * cw / total_w for cw in col_weights]
+    row_pixel = [available_h * rh / total_h for rh in row_weights]
+    base_x, base_y = wa_x, wa_y
+    col_x = []
+    cur = base_x
+    for i in range(cols):
+        col_x.append(int(cur))
+        cur += col_pixel[i] + gap
+    row_y = []
+    cur = base_y
+    for i in range(rows):
+        row_y.append(int(cur))
+        cur += row_pixel[i] + gap
+    for cell in ws.cells:
+        c = cell.col
+        r = cell.row
+        cell.x = col_x[c]
+        cell.w = int(col_pixel[c])
+        cell.y = row_y[cell.top_row]
+        span_h = 0.0
+        for sr in range(cell.top_row, cell.top_row + cell.row_span):
+            span_h += row_pixel[sr]
+        span_h += (cell.row_span - 1) * gap
+        cell.h = int(span_h)
+
+# --- placer ---
+def _run(cmd: List[str]) -> str:
+    try:
+        return subprocess.check_output(cmd, text=True, stderr=subprocess.STDOUT, timeout=2)
+    except Exception as e:
+        return ""
+
+def get_workareas() -> List[Tuple[int,int,int,int]]:
+    # try wmctrl first (primary), but also verify via xprop and xrandr; workarea was reported as 64,16,1480,651 x9 but display 1560,683 - user says not correctly read
+    workareas: List[Tuple[int,int,int,int]] = []
+    raw_wmctrl = _run(["wmctrl", "-d"])
+    if raw_wmctrl:
+        for line in raw_wmctrl.strip().splitlines():
+            # robust: handle "WA: 64,16 1480x651" and "WA: 0, 0 1920x1040" and extra spaces
+            m = re.search(r'WA:\s*(\d+)\s*,\s*(\d+)\s+(\d+)\s*x\s*(\d+)', line)
+            if m:
+                x = int(m.group(1)); y=int(m.group(2)); w=int(m.group(3)); h=int(m.group(4))
+                workareas.append((x,y,w,h))
+    # fallback: xprop _NET_WORKAREA (gives 4 ints per desktop: x,y,w,h repeated)
+    if not workareas:
+        raw_xprop = _run(["xprop", "-root", "_NET_WORKAREA"])
+        # example: _NET_WORKAREA(CARDINAL) = 64, 16, 1480, 651, 64, 16, 1480, 651, ...
+        m = re.search(r'_NET_WORKAREA.*=\s*(.*)', raw_xprop, re.S)
+        if m:
+            nums = list(map(int, re.findall(r'\d+', m.group(1))))
+            for i in range(0, len(nums), 4):
+                if i+3 < len(nums):
+                    workareas.append((nums[i], nums[i+1], nums[i+2], nums[i+3]))
+    # fallback: xrandr --listmonitors or xdpyinfo
+    if not workareas:
+        raw_xrandr = _run(["xrandr", "--listmonitors"])
+        # Monitors: 0: +*eDP-1 1920/344x1080/194+0+0  eDP-1
+        for line in raw_xrandr.splitlines():
+            m = re.search(r'(\d+)/\d+x(\d+)/\d+\+(\d+)\+(\d+)', line)
+            if m:
+                w = int(m.group(1)); h = int(m.group(2)); x = int(m.group(3)); y = int(m.group(4))
+                workareas.append((x,y,w,h))
+    if not workareas:
+        # last resort: xdpyinfo
+        raw_xdpy = _run(["xdpyinfo"])
+        m = re.search(r'dimensions:\s*(\d+)x(\d+)', raw_xdpy)
+        if m:
+            w = int(m.group(1)); h = int(m.group(2))
+            workareas.append((0,0,w,h))
+        else:
+            workareas = [(0,0,1920,1080)]
+    # deduplicate: wmctrl gave 9 identical entries for 9 desktops, but layout only needs unique per desktop index
+    return workareas
+
+def get_displays() -> List[Tuple[int,int]]:
+    displays: List[Tuple[int,int]] = []
+    raw_wmctrl = _run(["wmctrl", "-d"])
+    if raw_wmctrl:
+        for line in raw_wmctrl.strip().splitlines():
+            m = re.search(r'DG:\s*(\d+)\s*x\s*(\d+)', line)
+            if m:
+                w = int(m.group(1)); h = int(m.group(2))
+                displays.append((w,h))
+    if not displays:
+        # fallback to xrandr monitors
+        raw_xrandr = _run(["xrandr", "--listmonitors"])
+        for line in raw_xrandr.splitlines():
+            m = re.search(r'(\d+)/\d+x(\d+)/\d+', line)
+            if m:
+                displays.append((int(m.group(1)), int(m.group(2))))
+    if not displays:
+        # fallback to workarea size
+        wa = get_workareas()
+        displays = [(w,h) for _,_,w,h in wa]
+    return displays
+
+def _parse_wmctrl(out: str, with_pid: bool) -> List[Dict]:
+    wins = []
+    for line in out.strip().splitlines():
+        if not line.strip():
+            continue
+        parts = line.split(None, 4)
+        if len(parts) < 4:
+            continue
+        win_id = parts[0]
+        try:
+            desktop = int(parts[1])
+        except:
+            desktop = 0
+        if with_pid:
+            try:
+                pid = int(parts[2])
+            except:
+                pid = 0
+            if len(parts) == 5:
+                wmclass, title = parts[3], parts[4]
+            else:
+                wmclass, title = "", (parts[3] if len(parts) == 4 else "")
+        else:
+            pid = 0
+            wmclass = parts[2] if len(parts) >= 3 else ""
+            title = parts[4] if len(parts) == 5 else (parts[3] if len(parts) == 4 else "")
+        wins.append({"id": win_id, "desktop": desktop, "pid": pid, "wmclass": wmclass, "title": title, "raw": line})
+    return wins
+
+def get_windows() -> List[Dict]:
+    try:
+        out = subprocess.check_output(["wmctrl", "-l", "-p", "-x"], text=True, stderr=subprocess.STDOUT)
+    except Exception:
+        try:
+            out = subprocess.check_output(["wmctrl", "-l"], text=True, stderr=subprocess.STDOUT)
+        except Exception:
+            return []
+    return _parse_wmctrl(out, with_pid=True)
+
+def get_windows_with_class() -> List[Dict]:
+    try:
+        out = subprocess.check_output(["wmctrl", "-l", "-x"], text=True, stderr=subprocess.STDOUT)
+    except Exception:
+        return get_windows()
+    return _parse_wmctrl(out, with_pid=False)
+
+def switch_workspace(desktop: int):
+    try:
+        subprocess.call(["wmctrl", "-s", str(desktop)])
+        time.sleep(0.15)
+    except Exception as e:
+        print(f"warn: switch workspace failed: {e}")
+
+def get_frame_extents(win_id: str) -> Tuple[int, int, int, int]:
+    try:
+        out = subprocess.check_output(["xprop", "-id", win_id, "_NET_FRAME_EXTENTS"], text=True, stderr=subprocess.STDOUT)
+        m = re.search(r'_NET_FRAME_EXTENTS.*?=\s*(\d+),\s*(\d+),\s*(\d+),\s*(\d+)', out)
+        if m:
+            return (int(m.group(1)), int(m.group(2)), int(m.group(3)), int(m.group(4)))
+    except Exception:
+        pass
+    return (0, 0, 0, 0)
+
+def _wait_new_ids(existing, count):
+    """Poll up to 3s for newly-mapped windows."""
+    new_ids = []
+    deadline = time.time() + 3.0
+    while time.time() < deadline and len(new_ids) < count:
+        time.sleep(0.1)
+        wins = get_windows_with_class()
+        if not wins:
+            wins = get_windows()
+        candidates = [w for w in wins if w["id"] not in existing]
+        if len(candidates) >= count:
+            new_ids = [w["id"] for w in candidates[-count:]]
+            break
+        elif candidates:
+            new_ids = [w["id"] for w in candidates]
+            if len(new_ids) == count:
+                break
+    return new_ids
+
+def _fill_new_ids(valid_cells, new_ids, existing):
+    """Best-effort match remaining cells to windows: by class, then any, then reuse."""
+    if len(new_ids) >= len(valid_cells):
+        return new_ids
+    print(f"    warn: only {len(new_ids)}/{len(valid_cells)} windows detected after 3s, filling fallback")
+    wins = get_windows_with_class()
+    for cell in valid_cells[len(new_ids):]:
+        for w in wins:
+            if w["id"] not in existing and w["id"] not in new_ids and cell.exe.lower() in w.get("wmclass", "").lower():
+                new_ids.append(w["id"])
+                existing.add(w["id"])
+                break
+    for w in wins:
+        if w["id"] not in existing and w["id"] not in new_ids:
+            new_ids.append(w["id"])
+            if len(new_ids) == len(valid_cells):
+                break
+    if len(new_ids) < len(valid_cells):
+        wins = get_windows_with_class()
+        for cell in valid_cells[len(new_ids):]:
+            for w in wins:
+                if cell.exe.lower() in w.get("wmclass", "").lower() and w["id"] not in new_ids:
+                    new_ids.append(w["id"])
+                    print(f"    fallback: using existing window {w['id']} for '{cell.exe}'")
+                    break
+    return new_ids
+
+def _align_ids(new_ids, count):
+    try:
+        ids = sorted(new_ids, key=lambda x: int(x, 16))
+    except (ValueError, TypeError):
+        ids = new_ids
+    ids = ids[:count]
+    while len(ids) < count:
+        ids.append(ids[0] if ids else None)
+    return ids
+
+def _place_window(cell, win_id, ws_id, workareas, displays, maximize=False):
+    try:
+        subprocess.call(["wmctrl", "-ir", win_id, "-t", str(ws_id)])
+        if maximize:
+            subprocess.call(["wmctrl", "-ir", win_id, "-b", "add,maximized_vert,maximized_horz"])
+            print(f"    maximized {win_id} on workspace {ws_id+1}")
+            return
+        subprocess.call(["wmctrl", "-ir", win_id, "-b", "remove,maximized_vert,maximized_horz"])
+        time.sleep(0.2)  # let Openbox finish decorating so frame extents are valid
+        wa_x, wa_y, wa_w, wa_h = workareas[ws_id] if ws_id < len(workareas) else workareas[0]
+        # Openbox wmctrl -e sizes the outer frame; the client (visible content) is
+        # inset by the frame. Request outer = cell + frame and position outer at
+        # cell - left/top so the CLIENT exactly fills the cell, giving a uniform
+        # visible gap on both axes.
+        left, right, top, bottom = get_frame_extents(win_id)
+        w_adj = cell.w + left + right
+        h_adj = cell.h + top + bottom
+        adj_x = cell.x - left
+        adj_y = cell.y - top
+        if adj_x < wa_x:
+            adj_x = wa_x
+        if adj_y < wa_y:
+            adj_y = wa_y
+        if ws_id < len(displays):
+            disp_w2, disp_h2 = displays[ws_id]
+            if adj_x + w_adj > disp_w2:
+                adj_x = disp_w2 - w_adj
+            if adj_y + h_adj > disp_h2:
+                adj_y = disp_h2 - h_adj
+        else:
+            if adj_x + w_adj > wa_x + wa_w:
+                adj_x = wa_x + wa_w - w_adj
+            if adj_y + h_adj > wa_y + wa_h:
+                adj_y = wa_y + wa_h - h_adj
+        subprocess.call(["wmctrl", "-ir", win_id, "-e", f"0,{adj_x},{adj_y},{w_adj},{h_adj}"])
+        print(f"    placed {win_id} at {adj_x},{adj_y} {w_adj}x{h_adj} (frame {left},{right},{top},{bottom} wa {wa_x},{wa_y} {wa_w}x{wa_h})")
+    except Exception as e:
+        print(f"    place failed for {win_id}: {e}")
+
+def _launch_workspace(ws, workareas, displays):
+    print(f"[ob-grid] switching to workspace {ws.id+1} ({ws.name})")
+    switch_workspace(ws.id)
+    existing = set(w["id"] for w in get_windows())
+    valid_cells = []
+    for cell in ws.cells:
+        expanded = cell.expanded_cmd
+        argv = cell.argv
+        if not expanded or not argv:
+            print(f"  skip empty cell {cell.row},{cell.col}")
+            continue
+        exe = cell.exe
+        if shutil.which(exe) is None:
+            print(f"  error: executable '{exe}' not found for cell '{cell.raw_text}' (expanded '{expanded}')")
+            continue
+        valid_cells.append(cell)
+    if not valid_cells:
+        return
+    print(f"  launching {len(valid_cells)} windows in parallel...")
+    for cell in valid_cells:
+        print(f"    launching '{cell.expanded_cmd}' at {cell.x},{cell.y} {cell.w}x{cell.h}")
+        try:
+            subprocess.Popen(cell.argv, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+        except Exception as e:
+            print(f"    launch failed for {cell.expanded_cmd}: {e}")
+    new_ids = _wait_new_ids(existing, len(valid_cells))
+    new_ids = _fill_new_ids(valid_cells, new_ids, existing)
+    maximize = len(valid_cells) == 1
+    for cell, win_id in zip(valid_cells, _align_ids(new_ids, len(valid_cells))):
+        if win_id:
+            _place_window(cell, win_id, ws.id, workareas, displays, maximize=maximize)
+
+def launch_and_place(workspaces, global_gap=None, dry_run=False):
+    workareas = get_workareas()
+    displays = get_displays()
+    # auto-fix: if workarea is significantly smaller than display (panel/strut) but user likely wants full display, warn
+    if workareas and displays:
+        wa_w, wa_h = workareas[0][2], workareas[0][3]
+        disp_w, disp_h = displays[0]
+        if disp_w - wa_w > 50 or disp_h - wa_h > 50:
+            print(f"[ob-grid] note: workarea {wa_w}x{wa_h} smaller than display {disp_w}x{disp_h} by {disp_w-wa_w},{disp_h-wa_h} (struts/panels).")
+    print(f"[ob-grid] workareas: {workareas}")
+    print(f"[ob-grid] displays: {displays}")
+    default_gap = global_gap if global_gap is not None else 0
+    print(f"[ob-grid] gap={default_gap}")
+    for ws in workspaces:
+        idx = ws.id if ws.id < len(workareas) else 0
+        wa = workareas[idx]
+        if idx < len(displays):
+            disp = displays[idx]
+        else:
+            disp = (wa[2], wa[3])
+        gap = ws.gap if ws.gap is not None else default_gap
+        compute_layout_for_workspace(ws, wa, gap, display=disp)
+    if dry_run:
+        for ws in workspaces:
+            print(f"# workspace {ws.id+1} {ws.name} ({ws.cols}x{ws.rows})")
+            maximize = len(ws.cells) == 1
+            for cell in ws.cells:
+                print(f"  cell {cell.row},{cell.col} raw='{cell.raw_text}' -> '{cell.expanded_cmd}' at {cell.x},{cell.y} {cell.w}x{cell.h} exe={cell.exe} span={cell.row_span}")
+                if maximize:
+                    print(f"    wmctrl -ir <id> -b add,maximized_vert,maximized_horz ; wmctrl -ir <id> -t {ws.id}")
+                else:
+                    print(f"    wmctrl -ir <id> -e 0,{cell.x},{cell.y},{cell.w},{cell.h} ; wmctrl -ir <id> -t {ws.id}")
+            print()
+        return
+    for ws in workspaces:
+        _launch_workspace(ws, workareas, displays)
+    if len(workspaces) > 1:
+        switch_workspace(workspaces[0].id)
+
+# --- cli ---
+def is_yaml_file(path: str) -> bool:
+    return path.endswith('.yaml') or path.endswith('.yml')
+
+def parse_any(path: str):
+    if not is_yaml_file(path):
+        raise ValueError(f"{path}: not a YAML grid file (use .yaml or .yml)")
+    return parse_yaml(path)
+
+def cmd_launch(args):
+    try:
+        workspaces, aliases, global_gap = parse_any(args.file)
+    except Exception as e:
+        print(f"error parsing {args.file}: {e}", file=sys.stderr)
+        sys.exit(1)
+    launch_and_place(workspaces, global_gap, dry_run=args.dry_run)
+
+def main():
+    parser = argparse.ArgumentParser(prog="ob-grid", description="ob-grid launcher for Openbox (YAML matrix B, alias support, command-first)")
+    def default_grid_file():
+        for f in ["grid.yaml", "grid.yml"]:
+            if os.path.exists(f):
+                return f
+        return "grid.yaml"
+    parser.add_argument("file", nargs="?", default=default_grid_file(), help="grid file (yaml matrix B)")
+    parser.add_argument("--dry-run", action="store_true", help="don't launch, just print wmctrl commands")
+    cmd_launch(parser.parse_args())
+
+if __name__ == "__main__":
+    main()
