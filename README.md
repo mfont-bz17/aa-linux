@@ -276,23 +276,6 @@ from diagnostic output.
 - **picom does not work well with Xephyr/Xvfb.** The compositor does not behave
   reliably on the virtual displays used by the desktop environment (`:99`).
 
-
-## Development
-
-Protocol sources are under `aa-linux/protos/oaa/`; generated Python modules are
-under `aa-linux/generated/oaa/`. Keep generated output reproducible and update it
-only together with its source definition.
-
-The protocol definitions build on the open Android Auto protocol work at
-[`github.com/mrmees/open-android-auto`](https://github.com/mrmees/open-android-auto).
-See the attribution and SPDX notices in the individual source files.
-
-Useful checks:
-
-```sh
-make check
-```
-
 ## Android Auto Protobuf
 
 The protobuf source definitions are in `aa-linux/protos/oaa/`. The generated
