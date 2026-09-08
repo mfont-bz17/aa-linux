@@ -20,6 +20,7 @@ class Cell:
     expanded_cmd: str
     argv: List[str]
     exe: str
+    col_span: int = 1
     x: int = 0
     y: int = 0
     w: int = 0
@@ -37,6 +38,8 @@ class Workspace:
     cols: int = 0
     rows: int = 0
     gap: Optional[int] = None
+    _down_marks: List[Tuple[int, int]] = field(default_factory=list)
+    _explicit_span: Dict[int, Tuple[int, int]] = field(default_factory=dict)
 
 def resolve_cell_text(raw_text: str, aliases: Dict[str, str]) -> Tuple[str, List[str], str]:
     raw = raw_text.strip()
@@ -276,49 +279,78 @@ def parse_yaml(path: str) -> Tuple[List[Workspace], Dict[str, str], Optional[int
                        cols=cols, rows=rows,
                        gap=ws_gap)
         for r in range(rows):
+            prev_cell = None
             for c in range(cols):
                 raw_val = layout[r][c]
-                if raw_val is None or (isinstance(raw_val, str) and raw_val.strip() == ""):
+                raw_text = ""
+                if isinstance(raw_val, str):
+                    raw_text = raw_val.strip()
+                elif isinstance(raw_val, dict):
+                    raw_text = str(raw_val.get('cmd', '')).strip()
+                if raw_text in ("-", "|"):
+                    # explicit marker inside an empty slot
+                    if raw_text == "-" and prev_cell is not None:
+                        prev_cell.col_span += 1
+                    elif raw_text == "|":
+                        ws._down_marks.append((r, c))
                     continue
-                if isinstance(raw_val, dict):
-                    raw_text = str(raw_val.get('cmd', ''))
-                else:
-                    raw_text = str(raw_val).strip()
-                    if not raw_text:
-                        continue
+                if not raw_text:
+                    continue
                 expanded, argv, exe = resolve_cell_text(raw_text, aliases)
                 cell = Cell(row=r, col=c, raw_text=raw_text,
                             expanded_cmd=expanded, argv=argv, exe=exe)
                 ws.cells.append(cell)
-        for cell in ws.cells:
-            top_row, row_span = compute_cell_span(ws, cell)
-            cell.top_row = top_row
-            cell.row_span = row_span
+                prev_cell = cell
+        apply_down_marks(ws)
+        compute_vertical_spans(ws)
         workspaces.append(ws)
     if not workspaces:
         raise ValueError(f"{path}: no workspaces found")
     return workspaces, aliases, global_gap
 
 # --- layout ---
-def compute_cell_span(ws: Workspace, cell: Cell) -> Tuple[int, int]:
-    """Return (top_row, row_span) so the cell expands over empty rows in its
-    column. Rows above a cell with no upper neighbour are absorbed upward;
-    empty rows between two neighbours are shared (upper cell takes the odd one)."""
-    rows_in_col = sorted(c.row for c in ws.cells if c.col == cell.col)
-    idx = rows_in_col.index(cell.row)
-    prev_r = rows_in_col[idx-1] if idx > 0 else -1
-    next_r = rows_in_col[idx+1] if idx+1 < len(rows_in_col) else ws.rows
-    if prev_r < 0:
-        top = 0
-    else:
-        gap = cell.row - prev_r - 1
-        top = cell.row - gap // 2
-    if next_r >= ws.rows:
-        bottom = ws.rows - 1
-    else:
-        gap = next_r - cell.row - 1
-        bottom = cell.row + (gap + 1) // 2
-    return top, bottom - top + 1
+def apply_down_marks(ws: Workspace):
+    """Apply explicit '|' markers: each merges the marked empty slot into the
+    nearest app above it in the same column, extending that app one row down.
+    Consecutive '|' in a column extend the same app down a run; the marker is
+    ignored if there is no app above in that column.
+
+    Resulting spans are stored as explicit (top_row, row_span) so that
+    compute_vertical_spans does not shrink or redistribute them."""
+    if not ws._down_marks:
+        return
+    by_col: Dict[int, List[int]] = {}
+    for r, c in ws._down_marks:
+        by_col.setdefault(c, []).append(r)
+    for col, rows in by_col.items():
+        cells_in_col = [cell for cell in ws.cells
+                        if cell.col <= col < cell.col + cell.col_span]
+        if not cells_in_col:
+            continue
+        cells_in_col.sort(key=lambda cell: cell.row)
+        # group the marker rows into contiguous runs (for each run the same
+        # app above extends downward by the run length)
+        for r in sorted(rows):
+            above = [cell for cell in cells_in_col if cell.row < r]
+            if not above:
+                continue
+            target = max(above, key=lambda cell: cell.row)
+            key = id(target)
+            cur = ws._explicit_span.get(key, (target.row, target.row_span))
+            ws._explicit_span[key] = (cur[0], cur[1] + 1)
+    ws._down_marks = []
+
+def compute_vertical_spans(ws: Workspace):
+    """Set each cell's top_row/row_span. Vertical growth is markers-only: a cell
+    occupies exactly its own row (span 1) unless an explicit '|' marker gave it
+    an explicit span via apply_down_marks. Unmarked empty rows stay blank."""
+    for cell in ws.cells:
+        key = id(cell)
+        if key in ws._explicit_span:
+            cell.top_row, cell.row_span = ws._explicit_span[key]
+        else:
+            cell.top_row = cell.row
+            cell.row_span = 1
 
 def compute_layout_for_workspace(ws: Workspace, workarea: Tuple[int,int,int,int], gap: int, display: Tuple[int,int] = None):
     wa_x, wa_y, wa_w, wa_h = workarea
@@ -357,7 +389,7 @@ def compute_layout_for_workspace(ws: Workspace, workarea: Tuple[int,int,int,int]
         c = cell.col
         r = cell.row
         cell.x = col_x[c]
-        cell.w = int(col_pixel[c])
+        cell.w = int(sum(col_pixel[c:c + cell.col_span]) + (cell.col_span - 1) * gap)
         cell.y = row_y[cell.top_row]
         span_h = 0.0
         for sr in range(cell.top_row, cell.top_row + cell.row_span):
@@ -499,61 +531,82 @@ def get_frame_extents(win_id: str) -> Tuple[int, int, int, int]:
         pass
     return (0, 0, 0, 0)
 
-def _wait_new_ids(existing, count):
-    """Poll up to 3s for newly-mapped windows."""
-    new_ids = []
+def _win_class(w: Dict) -> str:
+    return (w.get("wmclass") or w.get("wm_class") or "").lower()
+
+def _wait_new_windows(existing, count):
+    """Poll up to 3s for newly-mapped windows; return candidate window dicts."""
+    candidates = []
     deadline = time.time() + 3.0
-    while time.time() < deadline and len(new_ids) < count:
+    while time.time() < deadline and len(candidates) < count:
         time.sleep(0.1)
         wins = get_windows_with_class()
         if not wins:
             wins = get_windows()
-        candidates = [w for w in wins if w["id"] not in existing]
-        if len(candidates) >= count:
-            new_ids = [w["id"] for w in candidates[-count:]]
+        cands = [w for w in wins if w["id"] not in existing]
+        if len(cands) >= count:
+            candidates = cands[-count:]
             break
-        elif candidates:
-            new_ids = [w["id"] for w in candidates]
-            if len(new_ids) == count:
+        elif cands:
+            candidates = cands
+            if len(candidates) == count:
                 break
-    return new_ids
+    return candidates
 
-def _fill_new_ids(valid_cells, new_ids, existing):
-    """Best-effort match remaining cells to windows: by class, then any, then reuse."""
-    if len(new_ids) >= len(valid_cells):
-        return new_ids
-    print(f"    warn: only {len(new_ids)}/{len(valid_cells)} windows detected after 3s, filling fallback")
+def _fill_new_windows(valid_cells, candidates, existing):
+    """Best-effort ensure a candidate window per cell: by class, then any, then reuse."""
+    count = len(valid_cells)
+    if len(candidates) >= count:
+        return candidates
+    print(f"    warn: only {len(candidates)}/{count} windows detected after 3s, filling fallback")
+    have = {w["id"] for w in candidates}
     wins = get_windows_with_class()
-    for cell in valid_cells[len(new_ids):]:
+    if not wins:
+        wins = get_windows()
+    for cell in valid_cells[len(candidates):]:
         for w in wins:
-            if w["id"] not in existing and w["id"] not in new_ids and cell.exe.lower() in w.get("wmclass", "").lower():
-                new_ids.append(w["id"])
-                existing.add(w["id"])
+            if w["id"] not in existing and w["id"] not in have and cell.exe.lower() in _win_class(w):
+                candidates.append(w)
+                have.add(w["id"])
                 break
     for w in wins:
-        if w["id"] not in existing and w["id"] not in new_ids:
-            new_ids.append(w["id"])
-            if len(new_ids) == len(valid_cells):
+        if w["id"] not in existing and w["id"] not in have:
+            candidates.append(w)
+            have.add(w["id"])
+            if len(candidates) == count:
                 break
-    if len(new_ids) < len(valid_cells):
-        wins = get_windows_with_class()
-        for cell in valid_cells[len(new_ids):]:
+    if len(candidates) < count:
+        for cell in valid_cells[len(candidates):]:
             for w in wins:
-                if cell.exe.lower() in w.get("wmclass", "").lower() and w["id"] not in new_ids:
-                    new_ids.append(w["id"])
+                if cell.exe.lower() in _win_class(w) and w["id"] not in have:
+                    candidates.append(w)
+                    have.add(w["id"])
                     print(f"    fallback: using existing window {w['id']} for '{cell.exe}'")
                     break
-    return new_ids
+    return candidates
 
-def _align_ids(new_ids, count):
-    try:
-        ids = sorted(new_ids, key=lambda x: int(x, 16))
-    except (ValueError, TypeError):
-        ids = new_ids
-    ids = ids[:count]
-    while len(ids) < count:
-        ids.append(ids[0] if ids else None)
-    return ids
+def _match_cells_to_windows(valid_cells, candidates):
+    """Return one window id per cell, ordered to match the cell list.
+
+    Windows are matched to cells by exe/wm_class identity first, so a fast-mapping
+    app (e.g. xterm) cannot steal the left cell from a slower one (e.g. amberol);
+    leftovers are assigned in detection order. Missing slots are left as None."""
+    assigned = [None] * len(valid_cells)
+    used = set()
+    for i, cell in enumerate(valid_cells):
+        for w in candidates:
+            wid = w["id"]
+            if wid in used:
+                continue
+            if cell.exe.lower() in _win_class(w):
+                assigned[i] = wid
+                used.add(wid)
+                break
+    leftovers = [w["id"] for w in candidates if w["id"] not in used]
+    for i in range(len(valid_cells)):
+        if assigned[i] is None and leftovers:
+            assigned[i] = leftovers.pop(0)
+    return assigned
 
 def _place_window(cell, win_id, ws_id, workareas, displays, maximize=False):
     try:
@@ -619,12 +672,16 @@ def _launch_workspace(ws, workareas, displays):
             subprocess.Popen(cell.argv, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
         except Exception as e:
             print(f"    launch failed for {cell.expanded_cmd}: {e}")
-    new_ids = _wait_new_ids(existing, len(valid_cells))
-    new_ids = _fill_new_ids(valid_cells, new_ids, existing)
+    candidates = _wait_new_windows(existing, len(valid_cells))
+    candidates = _fill_new_windows(valid_cells, candidates, existing)
+    ids = _match_cells_to_windows(valid_cells, candidates)
+    ids = ids + [None] * (len(valid_cells) - len(ids))
     maximize = len(valid_cells) == 1
-    for cell, win_id in zip(valid_cells, _align_ids(new_ids, len(valid_cells))):
+    for cell, win_id in zip(valid_cells, ids):
         if win_id:
             _place_window(cell, win_id, ws.id, workareas, displays, maximize=maximize)
+        else:
+            print(f"    no window id for cell {cell.row},{cell.col} '{cell.exe}'")
 
 def launch_and_place(workspaces, global_gap=None, dry_run=False):
     workareas = get_workareas()
@@ -653,7 +710,7 @@ def launch_and_place(workspaces, global_gap=None, dry_run=False):
             print(f"# workspace {ws.id+1} {ws.name} ({ws.cols}x{ws.rows})")
             maximize = len(ws.cells) == 1
             for cell in ws.cells:
-                print(f"  cell {cell.row},{cell.col} raw='{cell.raw_text}' -> '{cell.expanded_cmd}' at {cell.x},{cell.y} {cell.w}x{cell.h} exe={cell.exe} span={cell.row_span}")
+                print(f"  cell {cell.row},{cell.col} raw='{cell.raw_text}' -> '{cell.expanded_cmd}' at {cell.x},{cell.y} {cell.w}x{cell.h} exe={cell.exe} span={cell.row_span}x{cell.col_span}")
                 if maximize:
                     print(f"    wmctrl -ir <id> -b add,maximized_vert,maximized_horz ; wmctrl -ir <id> -t {ws.id}")
                 else:

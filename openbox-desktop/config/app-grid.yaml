@@ -14,14 +14,19 @@ workspaces:
     name: w3
     layout:
       - [xterm, xterm]
-      - [xterm, ]
+      - [xterm, |]
   - id: 4
     name: w4
     layout:
       - [xterm, xterm]
-      - [xterm, xterm]
+      - [xterm, -]
   - id: 5
-    name: d5
+    name: w5
+    layout:
+      - [xterm, xterm]
+      - [xterm, xterm]
+  - id: 6
+    name: w6
     layout:
       - [xterm, xterm, xterm]
       - [xterm, xterm, xterm]

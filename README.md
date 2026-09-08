@@ -40,7 +40,7 @@ The current implementation supports:
 - [ ] Improve ob-grid launcher
 - [ ] Audio streaming from Pipewire
 - [ ] On screen keyboard
-- [ ] Hide the cursor when needed 
+- [ ] Hide the cursor when needed
 - [ ] Add NMEA service for GeoClue2
 - [ ] Show car sensor in desktop
 - [ ] RaspberryPi/OrangePi OTG USB gadget support
@@ -98,8 +98,7 @@ virtual display:
 the phone-side TCP transport capturing it.
 
 ![Desktop environment screenshot](screenshots/1.png)
-![Desktop environment screenshot](screenshots/2.png)
-![Desktop environment screenshot](screenshots/3.png)
+![Desktop environment screenshot](screenshots/5.png)
 ![Desktop environment screenshot](screenshots/4.png)
 
 ## Architecture
@@ -272,9 +271,6 @@ verbose logs or packet captures containing credentials. Passphrases are redacted
 from diagnostic output.
 
 ## Known Issues
-
-- **picom does not work well with Xephyr/Xvfb.** The compositor does not behave
-  reliably on the virtual displays used by the desktop environment (`:99`).
 
 ## Android Auto Protobuf
 
