@@ -39,7 +39,8 @@ The current implementation supports:
 
 - [ ] Improve ob-grid launcher
 - [ ] Audio streaming from Pipewire
-- [ ] On screen keyboard
+- [x] On screen keyboard
+- [ ] Desktop color theme
 - [ ] Hide the cursor when needed
 - [ ] Add NMEA service for GeoClue2
 - [ ] Show car sensor in desktop
@@ -86,6 +87,13 @@ gives the captured desktop a car-friendly interface. It is based on the
 [justaguylinux openbox-setup](https://codeberg.org/justaguylinux/openbox-setup) project.
 Its custom launcher is the `ob-grid` script, a YAML grid window launcher that
 reads its layout from `config/app-grid.yaml`.
+
+The desktop uses [**Onboard**](https://github.com/onboard-osk/onboard) as its on-screen keyboard. It auto-starts with the
+session and appears at the bottom of the screen when text input is needed; the
+bar's keyboard button (`Onboard.qml`) toggles its visibility over D-Bus
+(`org.onboard.Onboard.Keyboard.ToggleVisible`), with a small `dbus-fast` helper
+(`config/scripts/onboard-watch`) tracking the keyboard's real `Visible` state so
+the icon reflects how the keyboard is shown or hidden, no matter the method.
 
 Launch it with `openbox-desktop.sh`, which starts the environment on the `:99`
 virtual display:

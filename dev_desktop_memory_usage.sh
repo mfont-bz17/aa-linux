@@ -28,10 +28,11 @@ show() {
 echo -e "${BOLD}System:${NC}"
 show "openbox" "$(pgrep -f 'openbox --config-file' | head -1)"
 show "picom" "$(pgrep -f 'picom' | head -1)"
+show "onboard" "$(pgrep -f onboard | head -1)"
 
 echo
 echo -e "${BOLD}Apps:${NC}"
-for p in $(DISPLAY=:99 wmctrl -lp | tr -s " " | cut -d " " -f3); do
+for p in $(DISPLAY=:99 wmctrl -lp | tr -s " " | grep -v Onboard |cut -d " " -f3 ); do
     show "$p" "$p"
 done
 

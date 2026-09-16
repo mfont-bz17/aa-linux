@@ -87,6 +87,7 @@ dunst is themed too.
 | Media    | play/pause        | —             | —            | prev/next track |
 | Weather  | 3-day forecast popup | rofi config (city/zip · °C/°F/auto) | — | — |
 | Volume   | mute              | pavucontrol   | —            | ±2%             |
+| Onboard  | toggle on-screen keyboard | —         | —            | —               |
 | Network  | network app       | nm-connection-editor | —     | —               |
 | Tray     | activate          | menu          | secondary    | —               |
 | Bell     | toggle do-not-disturb | notification history popup | — | —       |

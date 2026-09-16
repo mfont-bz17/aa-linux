@@ -22,5 +22,6 @@ Popout Popout.qml
 TweakSlider TweakSlider.qml
 BarTweaks BarTweaks.qml
 Weather Weather.qml
+Onboard Onboard.qml
 NotifyPopup NotifyPopup.qml
 WeatherPopup WeatherPopup.qml

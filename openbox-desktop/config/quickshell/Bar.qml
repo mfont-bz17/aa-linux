@@ -70,6 +70,7 @@ PanelWindow {
             width: parent.width - 8
             spacing: 4
 
+            Onboard { width: parent.width }
             Media { vertical: true; width: parent.width }
             //Weather { vertical: true; width: parent.width }
             //Metrics { vertical: true; width: parent.width }

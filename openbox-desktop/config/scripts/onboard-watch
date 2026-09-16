@@ -1,0 +1,82 @@
+#!/usr/bin/env python3
+"""onboard-watch — report the on-screen keyboard's visibility over stdout.
+
+Long-running helper for the quickshell bar. Subscribes to onboard's
+`Visible` property over D-Bus and prints one line per change:
+
+    ON
+    OFF
+
+A single line is written at startup (from the current property value, or
+OFF if the service is absent) so the bar can draw the icon before any
+signal arrives. Exits on a bus drop; the bar respawns it.
+
+Interface: org.onboard.Onboard /org/onboard/Onboard/Keyboard
+           (Visible property, org.onboard.Onboard.Keyboard)
+"""
+
+import asyncio
+import sys
+
+BUS = "org.onboard.Onboard"
+PATH = "/org/onboard/Onboard/Keyboard"
+IFACE = "org.onboard.Onboard.Keyboard"
+PROPS = "org.freedesktop.DBus.Properties"
+
+try:
+    from dbus_fast.aio import MessageBus
+except ImportError:
+    # dbus-fast missing (aa-linux dependency, but degrade gracefully):
+    # there is nothing to signal, so default to off.
+    print("OFF", flush=True)
+    sys.exit(0)
+
+
+def report(visible: bool) -> None:
+    print("ON" if visible else "OFF", flush=True)
+
+
+async def loop() -> None:
+    while True:
+        try:
+            bus = await MessageBus().connect()
+        except Exception:
+            report(False)
+            await asyncio.sleep(2.0)
+            continue
+
+        try:
+            introspection = await bus.introspect(BUS, PATH)
+            obj = bus.get_proxy_object(BUS, PATH, introspection)
+            props = obj.get_interface(PROPS)
+
+            # initial state so the icon is right before any signal
+            try:
+                v = await props.call_get(IFACE, "Visible")
+                report(v.value if hasattr(v, "value") else bool(v))
+            except Exception:
+                report(False)
+
+            def on_changed(interface_name, changed, invalidated):
+                if "Visible" in changed:
+                    report(bool(changed["Visible"].value))
+
+            props.on_properties_changed(on_changed)
+            await bus.wait_for_disconnect()
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            report(False)
+        finally:
+            try:
+                bus.disconnect()
+            except Exception:
+                pass
+        await asyncio.sleep(2.0)
+
+
+if __name__ == "__main__":
+    try:
+        asyncio.run(loop())
+    except KeyboardInterrupt:
+        pass

@@ -1,0 +1,104 @@
+<?xml version="1.0"?>
+
+<!--
+aa-linux color scheme for Onboard.
+Palette sourced from QuickShell's Theme.qml (github_dark defaults):
+  bg        #0d1117
+  altbg     #161b22
+  fg        #c9d1d9
+  border    #30363d
+  primary   #58a6ff
+  secondary #8b949e
+  alert     #f85149
+  disabled  #484f58
+Additional GitHub-Dark-derived tones:
+  hover     #21262d
+  active    #484f58
+-->
+
+<color_scheme name="aa-linux" format="2.0">
+    <layer> <color element="background" rgb="#0d1117" opacity="1.0"/> </layer>
+
+    <!-- default key group: altbg keys, light text, subtle border -->
+    <key_group>
+        <color element="fill"   rgb="#161b22"/>
+        <color element="stroke" rgb="#30363d"/>
+        <color element="label"  rgb="#c9d1d9"/>
+        <color element="dwell-progress" rgb="#58a6ff"/>
+
+        <!-- hover: lighter gray -->
+        <key_group>
+            <color element="fill" active="true" locked="false" rgb="#21262d"/>
+        </key_group>
+
+        <!-- pressed/active: primary accent -->
+        <key_group>
+            <color element="fill" active="true" locked="true" rgb="#58a6ff"/>
+            <color element="label" active="true" locked="true" rgb="#0d1117"/>
+        </key_group>
+
+        F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12,
+        Prnt, Pause, Scroll,
+        INS, DELE, HOME, END, PGUP, PGDN,
+        KPSU, KPDV, KPAD, KPMU,
+        middleclick, secondaryclick, singleclick, doubleclick, dragclick, hoverclick,
+        LFSH.grid, SPCE.grid, BKSP.grid, RTRN.grid,
+        hide.wordlist
+
+        <!-- spelling suggestions -->
+        <key_group>
+            <color element="fill"  rgb="#21262d"/>
+            <color element="label" rgb="#58a6ff"/>
+            correctionsbg,
+            correction
+        </key_group>
+
+        <!-- muted disabled glyphs -->
+        <key_group>
+            <color element="label" rgb="#484f58"/>
+            icon1, icon2
+        </key_group>
+
+        <!-- number row + numpad: secondary tone -->
+        <key_group>
+            <color element="fill" rgb="#1b2126"/>
+            ESC,
+            AE01, AE02, AE03, AE04, AE05, AE06, AE07, AE08, AE09, AE10, AE11, AE12,
+            KP1, KP2, KP3, KP4, KP5, KP6, KP7, KP8, KP9,
+        </key_group>
+
+        <!-- bottom row modifiers: disabled/muted fill -->
+        <key_group>
+            <color element="fill" rgb="#21262d"/>
+            <color element="label" rgb="#8b949e"/>
+            RCTL, LCTL, RALT, LALT, LWIN, RWIN, MENU,
+            LEFT, RGHT, UP, DOWN,
+            KP0, KPDL,
+            hoverclick.bottom-row,
+            quit
+        </key_group>
+
+        <!-- space + shifts: primary accent -->
+        <key_group>
+            <color element="fill" rgb="#21262d"/>
+            SPCE, LFSH, RTSH,
+            settings
+        </key_group>
+
+        <!-- enter-ish keys: alert tone -->
+        <key_group>
+            <color element="fill" rgb="#21262d"/>
+            <color element="label" rgb="#58a6ff"/>
+            BKSP, DELE.next-to-backspace, TAB, CAPS, RTRN, KPEN, NMLK,
+            layer.like_rtrn, LFSH.like_rtrn
+        </key_group>
+
+        <!-- snippets -->
+        <key_group>
+            <color element="fill" rgb="#21262d"/>
+            <color element="stroke" rgb="#58a6ff"/>
+            m0, m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, m14, m15
+        </key_group>
+    </key_group>
+
+</color_scheme>
