@@ -6,7 +6,7 @@ The reference implementation is:
 - `docs/index.html`
 - `docs/assets/style.css`
 - `docs/assets/site.js`
-- `docs/assets/logo.svg`
+- `docs/brand/assets/logo-icon.svg`
 - `docs/assets/og.jpg`
 - `docs/assets/screenshots/*`
 - `docs/.nojekyll`
@@ -22,7 +22,7 @@ product landing page.
 
 - Lead with technical information, not a marketing headline.
 - Use a flat terminal interface: monospace type, square borders, muted panels,
-  and a single blue accent.
+  and a single Debian-red brand accent.
 - Keep the page dense and scannable.
 - Prefer tables, code blocks, diagrams, lists, and exact commands.
 - State limitations and experimental status plainly.
@@ -58,10 +58,11 @@ Keep these values in `docs/assets/style.css` under `:root`.
   --text-soft: #c9ccd4;
   --muted: #a3abba;
   --muted-2: #8e96a4;
-  --blue: #62c4ff;
+  --brand: #d70a53;
+  --brand-deep: #a80030;
+  --link: #ff6b9d;
   --green: #8bd49c;
   --amber: #e5c07b;
-  --red: #ff6b81;
   --code-bg: #3f3f44;
   --mono: "Menlo", "Monaco", "Lucida Console", "Liberation Mono",
     "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Courier New", monospace;
@@ -75,10 +76,11 @@ Color semantics:
 
 | Token | Use |
 | --- | --- |
-| `--blue` | Links, primary buttons, selection, focus, active terminal tab |
-| `--green` | Success states, brand prompt, completed roadmap items |
+| `--brand` | Primary fills, primary buttons, selection, title cursor |
+| `--brand-deep` | Deep red borders and darker red surfaces |
+| `--link` | Text links, focus, hover backgrounds, active sidebar marker, optional prompt |
+| `--green` | Success states and completed roadmap items |
 | `--amber` | Experimental/partial states and warnings |
-| `--red` | Errors only |
 | `--muted` | Secondary metadata and descriptions |
 | `--muted-2` | Low-priority labels |
 | `--line` | Table and panel borders |
@@ -135,7 +137,7 @@ Reference:
 <header class="topbar">
   <div class="wrap topbar-inner">
     <a class="brand" href="#top" aria-label="aa-linux home">
-      <span class="brand-prompt" aria-hidden="true">&gt;</span>
+      <img src="brand/assets/logo-icon.svg" width="50" height="50" alt="">
       <span>aa-linux</span>
     </a>
     <span class="state state--warn topbar-state">experimental</span>
@@ -153,12 +155,11 @@ Reference:
 </header>
 ```
 
-- Sticky, `58px` minimum height, flat `--bg`, bottom border `--line-strong`.
-- Brand uses a green `>` prompt.
+- Sticky, `66px` minimum height, flat `--bg`, bottom border `--line-strong`.
+- Brand uses the R1 icon at 50px plus the `aa-linux` wordmark.
 - Keep only 3–4 top-level anchors. The sidebar carries the full contents.
 - Top navigation is hidden below `760px`.
-- Do not add a logo image to the top bar; the text prompt is the mark.
-- The favicon may continue to use `docs/assets/logo.svg`.
+- The favicon uses the R1 icon at `docs/brand/assets/logo-icon.svg`.
 
 ### Sidebar
 
@@ -221,8 +222,8 @@ The mobile TOC needs a different accessible name from the sidebar:
 </section>
 ```
 
-- The `$` breadcrumb prompt is green.
-- `h1::after` renders a blinking blue block cursor. Keep the animation and
+- The `$` breadcrumb prompt uses `--link`.
+- `h1::after` renders a blinking `--brand` red block cursor. Keep the animation and
   disable it under `prefers-reduced-motion`.
 - The abstract is 3–5 technical sentences, not marketing copy.
 - Tags are semantic metadata only: version, license, status, runtime.
@@ -275,9 +276,9 @@ Markup:
 
 ### Links
 
-- Global link color: `--blue`.
+- Global link color: `--link` (`#ff6b9d`).
 - Prose, list, table, terminal-foot, and footer links use a dotted underline.
-- On hover, text links invert: blue background, terminal background text.
+- On hover, text links invert: link-red background, terminal background text.
 - Do not rely on color alone to distinguish links.
 
 ### Buttons
@@ -289,8 +290,8 @@ Markup:
 
 - Square corners.
 - Default button: transparent background, `--line-strong` border.
-- Primary button: filled `--blue`, dark text.
-- Hover: invert to blue or light text as appropriate.
+- Primary button: filled `--brand` red, white text.
+- Hover: invert to brand red or light text as appropriate.
 - Use buttons for direct actions/links, not marketing calls to action.
 
 ### Specification table
@@ -578,7 +579,7 @@ Do not reintroduce:
 - [ ] Reuse the `:root` token block from `docs/assets/style.css`.
 - [ ] Keep all text monospace and body size 15px.
 - [ ] Keep `border-radius: 0`.
-- [ ] Use prompt markers: `>` for brand/active sidebar, `$` for breadcrumb.
+- [ ] Use the R1 icon plus wordmark for the brand; `>` for the active sidebar; `$` for the breadcrumb.
 - [ ] Use bracketed tags/states via CSS pseudo-elements.
 - [ ] Use dotted-underlined text links with inverted hover.
 - [ ] Use full-grid tables and stacked table rows at ≤620px.
@@ -596,9 +597,11 @@ Copy this into a new agent task when building another page in the same style:
 > Build a static documentation page for `aa-linux` using the style system in
 > `docs/STYLEGUIDE.md`. Use `docs/index.html` and `docs/assets/style.css` as
 > references. Keep the page technical and research-oriented: flat dark
-> `#222225` Terminal CSS palette, all-monospace typography, square borders,
+> `#222225` palette with Debian-red brand accents (`#d70a53` / `#ff6b9d`),
+> all-monospace typography, square borders,
 > no gradients, no marketing hero, no numbered section headings. Use the
-> `>` prompt for the brand and active sidebar link, `$` for the breadcrumb,
+> R1 icon plus the `aa-linux` wordmark for the brand, `>` for the active sidebar
+> link in `--link` red, `$` for the breadcrumb,
 > CSS-generated bracket status tags, dotted-underlined links with inverted
 > hover, full-grid tables that stack on mobile, inline code with backticks,
 > terminal tabs with copy, and a native `<dialog>` screenshot lightbox.

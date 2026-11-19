@@ -14,10 +14,11 @@
   --text-soft: #c9ccd4;
   --muted: #a3abba;
   --muted-2: #8e96a4;
-  --blue: #62c4ff;
+  --brand: #d70a53;
+  --brand-deep: #a80030;
+  --link: #ff6b9d;
   --green: #8bd49c;
   --amber: #e5c07b;
-  --red: #ff6b81;
   --code-bg: #3f3f44;
   --mono: "Menlo", "Monaco", "Lucida Console", "Liberation Mono", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Courier New", monospace;
   --wrap: 1180px;
@@ -63,12 +64,12 @@ img {
 }
 
 a {
-  color: var(--blue);
+  color: var(--link);
   text-decoration: none;
 }
 
 a:hover {
-  color: #b9d5ff;
+  color: var(--text);
 }
 
 button,
@@ -81,13 +82,13 @@ button {
 }
 
 :focus-visible {
-  outline: 2px solid var(--blue);
+  outline: 2px solid var(--link);
   outline-offset: 2px;
 }
 
 ::selection {
-  background: var(--blue);
-  color: var(--bg);
+  background: var(--brand);
+  color: #ffffff;
 }
 
 .wrap {
@@ -130,30 +131,28 @@ button {
   display: flex;
   align-items: center;
   gap: 12px;
-  min-height: 58px;
+  min-height: 66px;
 }
 
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 10px;
   color: var(--text);
   font-family: var(--mono);
-  font-size: 0.88rem;
+  font-size: 0.95rem;
   font-weight: 600;
   letter-spacing: -0.01em;
 }
 
+.brand img {
+  width: 50px;
+  height: 50px;
+  flex: 0 0 auto;
+}
+
 .brand:hover {
-  background: var(--blue);
-  color: var(--bg);
-}
-
-.brand-prompt {
-  color: var(--green);
-}
-
-.brand:hover .brand-prompt {
+  background: var(--link);
   color: var(--bg);
 }
 
@@ -175,7 +174,7 @@ button {
 }
 
 .topnav a:hover {
-  background: var(--blue);
+  background: var(--link);
   color: var(--bg);
 }
 
@@ -192,7 +191,7 @@ button {
 }
 
 .repo-link:hover {
-  background: var(--blue);
+  background: var(--link);
   color: var(--bg);
 }
 
@@ -250,11 +249,11 @@ button {
   content: "";
   position: absolute;
   left: 0;
-  color: var(--green);
+  color: var(--link);
 }
 
 .side-nav a:hover {
-  background: var(--blue);
+  background: var(--link);
   color: var(--bg);
 }
 
@@ -274,7 +273,7 @@ button {
 }
 
 .side-group > a:hover {
-  background: var(--blue);
+  background: var(--link);
   color: var(--bg);
 }
 
@@ -340,7 +339,7 @@ button {
 }
 
 .mobile-toc a:hover {
-  background: var(--blue);
+  background: var(--link);
   color: var(--bg);
 }
 
@@ -361,7 +360,7 @@ button {
 }
 
 .breadcrumb-prompt {
-  color: var(--green);
+  color: var(--link);
 }
 
 .page-head h1 {
@@ -378,7 +377,7 @@ button {
   width: 0.48em;
   height: 0.82em;
   margin-left: 0.12em;
-  background: var(--blue);
+  background: var(--brand);
   animation: blink 1.15s step-end infinite;
 }
 
@@ -471,15 +470,15 @@ button {
 }
 
 .btn:hover {
-  border-color: var(--blue);
-  background: var(--blue);
-  color: var(--bg);
+  border-color: var(--brand);
+  background: var(--brand);
+  color: #ffffff;
 }
 
 .btn--primary {
-  border-color: var(--blue);
-  background: var(--blue);
-  color: var(--bg);
+  border-color: var(--brand);
+  background: var(--brand);
+  color: #ffffff;
 }
 
 .btn--primary:hover {
@@ -490,7 +489,7 @@ button {
 
 .text-link {
   padding: 7px 2px;
-  color: var(--blue);
+  color: var(--link);
   font-family: var(--mono);
   font-size: 0.71rem;
   text-decoration: underline;
@@ -499,7 +498,7 @@ button {
 }
 
 .text-link:hover {
-  background: var(--blue);
+  background: var(--link);
   color: var(--bg);
   text-decoration: none;
 }
@@ -551,7 +550,7 @@ button {
 .data a,
 .terminal-foot a,
 .page-footer a {
-  color: var(--blue);
+  color: var(--link);
   text-decoration: underline;
   text-decoration-style: dotted;
   text-underline-offset: 3px;
@@ -564,7 +563,7 @@ button {
 .data a:hover,
 .terminal-foot a:hover,
 .page-footer a:hover {
-  background: var(--blue);
+  background: var(--link);
   color: var(--bg);
   text-decoration: none;
 }
@@ -893,7 +892,7 @@ pre.tree {
 }
 
 .tab:hover {
-  background: var(--blue);
+  background: var(--link);
   color: var(--bg);
 }
 
@@ -919,8 +918,8 @@ pre.tree {
 }
 
 .copy-button:hover {
-  background: var(--blue);
-  border-color: var(--blue);
+  background: var(--link);
+  border-color: var(--link);
   color: var(--bg);
 }
 
@@ -1089,7 +1088,7 @@ pre.tree {
 }
 
 .lightbox-actions a:hover {
-  background: var(--blue);
+  background: var(--link);
   color: var(--bg);
   text-decoration: none;
 }
@@ -1106,8 +1105,8 @@ pre.tree {
 }
 
 .icon-button:hover {
-  background: var(--blue);
-  border-color: var(--blue);
+  background: var(--link);
+  border-color: var(--link);
   color: var(--bg);
 }
 
@@ -1142,8 +1141,8 @@ pre.tree {
 }
 
 .lightbox-nav:hover {
-  background: var(--blue);
-  border-color: var(--blue);
+  background: var(--link);
+  border-color: var(--link);
   color: var(--bg);
 }
 
@@ -1258,7 +1257,7 @@ pre.tree {
   }
 
   .topbar-inner {
-    min-height: 54px;
+    min-height: 62px;
   }
 
   .topbar-state {

@@ -4,9 +4,9 @@
 [mfont-bz17.github.io/aa-linux](https://mfont-bz17.github.io/aa-linux/) —
 screenshots, architecture, build notes, and current status.
 
-**Page style guide:**
-[docs/STYLEGUIDE.md](docs/STYLEGUIDE.md) — design tokens and rules for
-reproducing the project page.
+**Brand assets:**
+[docs/brand/index.html](docs/brand/index.html) — selected R1 mark, variants,
+lockups, and downloads.
 
 `aa-linux` is a Linux phone-side implementation of the Android Auto protocol.
 It plays the role of the Android phone in an Android Auto session: it
