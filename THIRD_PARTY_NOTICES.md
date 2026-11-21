@@ -12,8 +12,8 @@
 - The bundled `openbox-desktop` layout is based on the
   [`justaguylinux/openbox-setup`](https://codeberg.org/justaguylinux/openbox-setup)
   project. Its original attribution and license terms remain with that project.
-- The Tux mascot artwork used in the brand assets under
-  `docs/brand/assets/logo-*` was created by
+- The Tux mascot artwork used in the logo artwork under
+  `docs/artwork/assets/logo-*` was created by
   Larry Ewing with The GIMP. Permission to use and/or
   modify the image is granted provided Larry Ewing and The GIMP are
   acknowledged. The logo compositions are part of the aa-linux project page.

@@ -1,0 +1,101 @@
+<?xml version="1.0"?>
+
+<!--
+aa-linux color scheme for Onboard.
+GENERATED FILE — edit aa-linux.colors.template and theme/colors.ini instead.
+Rendered by scripts/onboard-theme from the active desktop palette.
+-->
+
+<color_scheme name="aa-linux" format="2.0">
+    <layer> <color element="background" rgb="{{BG}}" opacity="1.0"/> </layer>
+
+    <!-- default key group: altbg keys, light text, subtle border -->
+    <key_group>
+        <color element="fill"   rgb="{{ALT}}"/>
+        <color element="stroke" rgb="{{BORDER}}"/>
+        <color element="label"  rgb="{{FG}}"/>
+        <color element="dwell-progress" rgb="{{PRIMARY}}"/>
+
+        <!-- hover: raised surface -->
+        <key_group>
+            <color element="fill" active="true" locked="false" rgb="{{HOVER}}"/>
+        </key_group>
+
+        <!-- pressed/active: theme primary with readable label -->
+        <key_group>
+            <color element="fill" active="true" locked="true" rgb="{{PRIMARY}}"/>
+            <color element="label" active="true" locked="true" rgb="{{ON_PRIMARY}}"/>
+        </key_group>
+
+        <!-- primary glyphs only: keep the normal raised key background -->
+        <key_group>
+            <color element="fill" rgb="{{HOVER}}"/>
+            <color element="label" rgb="{{PRIMARY}}"/>
+            LFSH, RTSH, BKSP, RTRN, KPEN, TAB, CAPS, DELE.next-to-backspace
+        </key_group>
+
+        F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12,
+        Prnt, Pause, Scroll,
+        INS, DELE, HOME, END, PGUP, PGDN,
+        KPSU, KPDV, KPAD, KPMU,
+        middleclick, secondaryclick, singleclick, doubleclick, dragclick, hoverclick,
+        LFSH.grid, SPCE.grid, BKSP.grid, RTRN.grid,
+        hide.wordlist
+
+        <!-- spelling suggestions -->
+        <key_group>
+            <color element="fill"  rgb="{{HOVER}}"/>
+            <color element="label" rgb="{{ALERT}}"/>
+            correctionsbg,
+            correction
+        </key_group>
+
+        <!-- muted disabled glyphs -->
+        <key_group>
+            <color element="label" rgb="{{DISABLED}}"/>
+            icon1, icon2
+        </key_group>
+
+        <!-- number row + numpad: sunken tone -->
+        <key_group>
+            <color element="fill" rgb="{{SUNKEN}}"/>
+            ESC,
+            AE01, AE02, AE03, AE04, AE05, AE06, AE07, AE08, AE09, AE10, AE11, AE12,
+            KP1, KP2, KP3, KP4, KP5, KP6, KP7, KP8, KP9,
+        </key_group>
+
+        <!-- bottom row modifiers: raised fill, secondary labels -->
+        <key_group>
+            <color element="fill" rgb="{{HOVER}}"/>
+            <color element="label" rgb="{{SECONDARY}}"/>
+            RCTL, LCTL, RALT, LALT, LWIN, RWIN, MENU,
+            LEFT, RGHT, UP, DOWN,
+            KP0, KPDL,
+            hoverclick.bottom-row,
+            quit
+        </key_group>
+
+        <!-- space: raised fill -->
+        <key_group>
+            <color element="fill" rgb="{{HOVER}}"/>
+            SPCE,
+            settings
+        </key_group>
+
+        <!-- remaining action keys: raised fill, alert labels -->
+        <key_group>
+            <color element="fill" rgb="{{HOVER}}"/>
+            <color element="label" rgb="{{ALERT}}"/>
+            NMLK,
+            layer.like_rtrn, LFSH.like_rtrn
+        </key_group>
+
+        <!-- snippets: raised fill, primary outline -->
+        <key_group>
+            <color element="fill" rgb="{{HOVER}}"/>
+            <color element="stroke" rgb="{{PRIMARY}}"/>
+            m0, m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, m14, m15
+        </key_group>
+    </key_group>
+
+</color_scheme>

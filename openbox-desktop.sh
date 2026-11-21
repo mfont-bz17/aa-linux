@@ -6,8 +6,11 @@ WS=$(pwd)/openbox-desktop
 export HOME="$WS/aa-linux-home"
 mkdir -p $HOME
 mkdir -p $HOME/.local/share/
-[ -L "$HOME/.config" ] || ln -s "$WS/config" "$HOME/.config"
-[ -L "$HOME/.local/share/onboard" ] || ln -s "$WS/config/onboard/" "$HOME/.local/share/onboard"
+
+rm "$HOME/.config"
+ln -s "$WS/config" "$HOME/.config"
+rm "$HOME/.local/share/onboard"
+ln -s "$WS/config/onboard/" "$HOME/.local/share/onboard"
 
 export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_DATA_HOME="$HOME"

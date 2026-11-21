@@ -1,5 +1,5 @@
-/* aa-linux brand assets
-   Terminal CSS-style documentation page for the R1 mark. */
+/* aa-linux artwork
+   Terminal CSS-style documentation page for the logo, themes, and wallpapers. */
 
 :root {
   --bg: #222225;
@@ -480,6 +480,82 @@ code {
 .sw-amber { background: #e5c07b; }
 .sw-line { background: #3f3f44; }
 
+/* Themes */
+
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.theme-strip {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  height: 42px;
+  border-bottom: 1px solid var(--line);
+  background: #1b1b1e;
+}
+
+.theme-strip span {
+  display: block;
+  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.06);
+}
+
+.theme-tokens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+  color: var(--muted-2);
+  font-size: 0.64rem;
+}
+
+.theme-tokens li {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.theme-tokens code {
+  padding: 0;
+  background: none;
+  color: var(--text-soft);
+  font-size: 0.64rem;
+}
+
+.chip {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 auto;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+/* Wallpapers */
+
+.wall-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.wall-card {
+  margin: 0;
+}
+
+.wall-preview {
+  border-bottom: 1px solid var(--line);
+  background: #1b1b1e;
+}
+
+.wall-preview img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
 /* Sizing */
 
 .size-row {
@@ -658,7 +734,7 @@ td:first-child {
   .hero { grid-template-columns: 1fr; padding-top: 34px; }
   .hero-mark { min-height: 240px; }
   .topnav { display: none; }
-  .lockup-grid, .usage-grid { grid-template-columns: 1fr; }
+  .lockup-grid, .usage-grid, .theme-grid, .wall-grid { grid-template-columns: 1fr; }
   .asset-grid { grid-template-columns: 1fr; }
   .palette { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

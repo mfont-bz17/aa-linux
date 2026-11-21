@@ -18,6 +18,27 @@ BarModule {
     icon: "󰌌"
     iconColor: root.onboardOn ? Theme.accent : Qt.alpha(Theme.fg, 0.45)
 
+    // Keep Onboard's color scheme in sync with the desktop palette. The
+    // helper renders the template and bounces its gsettings key so Onboard
+    // reloads without being restarted.
+    FileView {
+        id: paletteWatch
+        path: Theme.configDir + "/theme/colors.ini"
+        watchChanges: true
+        onFileChanged: {
+            reload()
+            onboardThemeTimer.restart()
+        }
+        onLoaded: onboardThemeTimer.restart()
+    }
+
+    Timer {
+        id: onboardThemeTimer
+        interval: 200
+        onTriggered: Quickshell.execDetached([
+            Theme.configDir + "/scripts/onboard-theme"])
+    }
+
     Process {
         id: watcher
         command: [Theme.configDir + "/scripts/onboard-watch"]

@@ -2,28 +2,130 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// Wallpaper picker popup: a thumbnail grid of ~/.config/bspwm/wallpaper.
-// Picking one extracts a palette from the image right here (hidden Image →
-// Canvas histogram → HSL-derived semantic colors) and hands wallpaper +
-// palette to scripts/wallpaper-theme, which re-themes the whole desktop.
+// Wallpaper picker popup: a thumbnail grid of ~/.config/bspwm/wallpaper,
+// plus a color-theme strip. Picking a wallpaper extracts a palette from the
+// image right here (hidden Image → Canvas histogram → HSL-derived semantic
+// colors) and hands wallpaper + palette to scripts/set-wallpaper. Picking a
+// theme writes theme/colors.ini, which Theme.qml watches live.
 // No pywal/wallust needed — quickshell is the color engine.
 Popout {
     id: root
 
     cardWidth: 176 * 3 + 2 * cardPadding
-    cardHeight: 4 * 103 + 2 * cardPadding
+    cardHeight: 4 * 103 + 64 + 8 + 2 * cardPadding
 
     property var wallpapers: []
     property string applyingPath: ""
     property bool randomPending: false
 
+    // custom accent picker
+    property bool customOpen: false
+    property real customHue: 340
+    property real customSat: 70
+    property real customVal: 80
+    readonly property string customHex: hsvToHex(customHue, customSat / 100,
+                                                 customVal / 100)
+
+    // The active preset is derived from the live palette, so an externally
+    // edited colors.ini simply shows as "Custom" instead of lying.
+    readonly property string currentTheme: {
+        const p = String(Theme.primary).toLowerCase()
+        for (const t of ColorThemes.presets)
+            if (t.primary.toLowerCase() === p)
+                return t.name
+        return "Custom"
+    }
+
+    FileView {
+        id: paletteFile
+        path: Theme.configDir + "/theme/colors.ini"
+    }
+
+    function applyTheme(theme) {
+        paletteFile.setText([
+            "; aa-linux desktop palette",
+            "; Written by quickshell/WallpaperPicker.qml; read live by Theme.qml.",
+            "background = " + theme.bg,
+            "background-alt = " + theme.altbg,
+            "foreground = " + theme.fg,
+            "border = " + theme.border,
+            "primary = " + theme.primary,
+            "secondary = " + theme.secondary,
+            "alert = " + theme.alert,
+            "disabled = " + theme.disabled
+        ].join("\n") + "\n")
+    }
+
+    function hexOf(c) {
+        return "#" + String(c).slice(-6)
+    }
+
+    function openCustom() {
+        const hex = hexOf(Theme.primary)
+        const hsv = rgbToHsv(
+            parseInt(hex.slice(1, 3), 16) / 255,
+            parseInt(hex.slice(3, 5), 16) / 255,
+            parseInt(hex.slice(5, 7), 16) / 255)
+        customHue = Math.round(hsv[0])
+        customSat = Math.round(hsv[1] * 100)
+        customVal = Math.round(hsv[2] * 100)
+        customOpen = true
+    }
+
+    function toggleCustom() {
+        if (customOpen)
+            customOpen = false
+        else
+            openCustom()
+    }
+
+    function applyCustom() {
+        const h = customHue
+        const s = customSat / 100
+        const v = customVal / 100
+        const primary = hsvToHex(h, s, v)
+
+        // Keep the current surfaces and derive a coherent pair of accents.
+        applyTheme({
+            name: "Custom",
+            bg: hexOf(Theme.bg),
+            altbg: hexOf(Theme.altbg),
+            fg: hexOf(Theme.fg),
+            border: hexOf(Theme.border),
+            primary: primary,
+            secondary: hsvToHex((h + 160) % 360,
+                Math.min(Math.max(s * 0.35, 0.15), 0.55),
+                Math.min(v + 0.12, 1.0)),
+            alert: hsvToHex(345,
+                Math.min(Math.max(s * 0.9, 0.45), 0.9),
+                Math.min(Math.max(v, 0.75), 0.98)),
+            disabled: hexOf(Theme.disabled)
+        })
+        customOpen = false
+    }
+
     // re-scan the wallpaper dir on every open, so new files just show up
     onVisibleChanged: {
         if (visible)
             lister.running = true
+        else
+            customOpen = false
     }
 
     function toggle() { visible = !visible }
+
+    // Keep wallpapers in the same order as the theme swatches. Files that
+    // don't match a preset (or the Redline base) sort after the presets.
+    function themeRank(path) {
+        const base = String(path).split("/").pop()
+            .replace(/\.(png|jpe?g)$/i, "").toLowerCase()
+        const name = base.startsWith("aa-linux-")
+            ? base.slice("aa-linux-".length) : base
+        for (let i = 0; i < ColorThemes.presets.length; i++)
+            if (ColorThemes.presets[i].name.toLowerCase() === name)
+                return i
+        return ColorThemes.presets.length
+    }
 
     function applyRandom() {
         randomPending = true
@@ -59,7 +161,10 @@ Popout {
             if (running) {
                 root._found = []
             } else {
-                root.wallpapers = root._found
+                root.wallpapers = root._found.slice().sort((a, b) => {
+                    const ra = root.themeRank(a), rb = root.themeRank(b)
+                    return ra !== rb ? ra - rb : a.localeCompare(b)
+                })
                 if (root.randomPending) {
                     root.randomPending = false
                     if (root.wallpapers.length > 0)
@@ -105,63 +210,512 @@ Popout {
             }
         }
 
-        GridView {
-            id: grid
+        Column {
             anchors.fill: parent
-            clip: true
-            cellWidth: 176
-            cellHeight: 103
-            cacheBuffer: 4000
-            model: root.wallpapers
+            spacing: 8
 
-            delegate: Item {
-                id: cell
-                required property string modelData
-                readonly property bool busy: root.applyingPath === modelData
-                width: grid.cellWidth
-                height: grid.cellHeight
+            // color-theme strip: the active preset, then one swatch per preset
+            Item {
+                id: themeBlock
+                width: parent.width
+                height: 64
 
-                Rectangle {
-                    anchors.fill: parent
-                    anchors.margins: 4
-                    radius: 6
-                    color: Qt.alpha(Theme.fg, 0.06)
+                Text {
+                    id: themeLabel
+                    anchors.left: parent.left
+                    anchors.top: parent.top
+                    text: "Color theme"
+                    color: Theme.accent
+                    font.family: Theme.fontFamily
+                    font.pixelSize: 12
+                    font.bold: true
+                }
 
-                    Image {
-                        anchors.fill: parent
-                        anchors.margins: 1
-                        source: "file://" + cell.modelData
-                        sourceSize.width: 340
-                        fillMode: Image.PreserveAspectCrop
-                        asynchronous: true
-                        clip: true
-                    }
+                Text {
+                    anchors.right: parent.right
+                    anchors.baseline: themeLabel.baseline
+                    text: root.currentTheme
+                    color: Qt.alpha(Theme.fg, 0.55)
+                    font.family: Theme.fontFamily
+                    font.pixelSize: 10
+                }
 
-                    Rectangle {
-                        anchors.fill: parent
-                        radius: 6
-                        color: "transparent"
-                        border.width: cell.busy ? 3 : mouse.containsMouse ? 2 : 0
-                        border.color: cell.busy ? Theme.accent : Qt.alpha(Theme.accent, 0.8)
+                Row {
+                    anchors.left: parent.left
+                    anchors.top: themeLabel.bottom
+                    anchors.topMargin: 6
+                    spacing: 4
 
-                        SequentialAnimation on opacity {
-                            running: cell.busy
-                            loops: Animation.Infinite
-                            alwaysRunToEnd: true
-                            NumberAnimation { to: 0.4; duration: 350 }
-                            NumberAnimation { to: 1.0; duration: 350 }
+                    Repeater {
+                        model: ColorThemes.presets
+
+                        Item {
+                            id: swatchCell
+                            required property var modelData
+                            readonly property bool selected: root.currentTheme === modelData.name
+                            width: 55
+                            height: 42
+
+                            Rectangle {
+                                id: swatch
+                                anchors.top: parent.top
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                width: parent.width
+                                height: 26
+                                radius: 6
+                                // one theme = one swatch; the preset's other
+                                // colors still drive secondary/alert elsewhere
+                                color: swatchCell.modelData.primary
+                                border.width: swatchCell.selected ? 2 : 1
+                                border.color: swatchCell.selected
+                                    ? Theme.fg
+                                    : swatchMouse.containsMouse
+                                        ? Qt.alpha(Theme.fg, 0.55)
+                                        : Qt.alpha(Theme.fg, 0.16)
+                                Behavior on border.color { ColorAnimation { duration: 120 } }
+                            }
+
+                            Text {
+                                anchors.top: swatch.bottom
+                                anchors.topMargin: 3
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: swatchCell.modelData.name
+                                color: swatchCell.selected || swatchMouse.containsMouse
+                                    ? Theme.accent
+                                    : Qt.alpha(Theme.fg, 0.55)
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 9
+                            }
+
+                            MouseArea {
+                                id: swatchMouse
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                onClicked: root.applyTheme(swatchCell.modelData)
+                            }
                         }
                     }
 
-                    MouseArea {
-                        id: mouse
+                    // custom accent swatch opens the inline picker
+                    Item {
+                        id: customCell
+                        readonly property bool selected: root.currentTheme === "Custom"
+                        width: 55
+                        height: 42
+
+                        Rectangle {
+                            id: customSwatch
+                            anchors.top: parent.top
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            width: parent.width
+                            height: 26
+                            radius: 6
+                            border.width: customCell.selected ? 2 : 1
+                            border.color: customCell.selected
+                                ? Theme.fg
+                                : customMouse.containsMouse
+                                    ? Qt.alpha(Theme.fg, 0.55)
+                                    : Qt.alpha(Theme.fg, 0.16)
+                            Behavior on border.color { ColorAnimation { duration: 120 } }
+
+                            gradient: Gradient {
+                                orientation: Gradient.Horizontal
+                                GradientStop { position: 0.00; color: "#ff4d4d" }
+                                GradientStop { position: 0.17; color: "#ffb84d" }
+                                GradientStop { position: 0.33; color: "#ffe94d" }
+                                GradientStop { position: 0.50; color: "#4dff88" }
+                                GradientStop { position: 0.67; color: "#4dd2ff" }
+                                GradientStop { position: 0.83; color: "#8a7dff" }
+                                GradientStop { position: 1.00; color: "#ff6bd6" }
+                            }
+                        }
+
+                        Text {
+                            anchors.top: customSwatch.bottom
+                            anchors.topMargin: 3
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: "Custom"
+                            color: customCell.selected || customMouse.containsMouse
+                                ? Theme.accent
+                                : Qt.alpha(Theme.fg, 0.55)
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 9
+                        }
+
+                        MouseArea {
+                            id: customMouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            onClicked: root.toggleCustom()
+                        }
+                    }
+                }
+            }
+
+            // collapsible custom accent picker (inline, not a popup)
+            Item {
+                id: customPanel
+                width: parent.width
+                height: root.customOpen ? 190 : 0
+                visible: height > 0
+                clip: true
+                Behavior on height { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
+
+                Rectangle {
+                    anchors.fill: parent
+                    radius: 8
+                    color: Qt.alpha(Theme.fg, 0.05)
+                    border.width: 1
+                    border.color: Qt.alpha(Theme.fg, 0.08)
+                }
+
+                Column {
+                    anchors.fill: parent
+                    anchors.margins: 4
+                    spacing: 4
+
+                    Item {
+                        width: parent.width
+                        height: 18
+
+                        Text {
+                            anchors.left: parent.left
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: "Custom color"
+                            color: Theme.accent
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 12
+                            font.bold: true
+                        }
+
+                        Text {
+                            anchors.right: parent.right
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: "✕"
+                            color: closeCustom.containsMouse ? Theme.fg : Qt.alpha(Theme.fg, 0.55)
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 13
+
+                            MouseArea {
+                                id: closeCustom
+                                anchors.fill: parent
+                                anchors.margins: -6
+                                hoverEnabled: true
+                                onClicked: root.customOpen = false
+                            }
+                        }
+                    }
+
+                    Row {
+                        width: parent.width
+                        height: 140
+                        spacing: 10
+
+                        // saturation / brightness field
+                        Rectangle {
+                            id: svArea
+                            width: 140
+                            height: 140
+                            color: "transparent"
+
+                            Canvas {
+                                id: svCanvas
+                                anchors.fill: parent
+                                property color hueColor: hsvToHex(root.customHue, 1, 1)
+                                onHueColorChanged: requestPaint()
+                                onWidthChanged: requestPaint()
+                                onHeightChanged: requestPaint()
+                                onVisibleChanged: requestPaint()
+
+                                onPaint: {
+                                    const ctx = getContext("2d")
+                                    ctx.clearRect(0, 0, width, height)
+
+                                    // rounded clip so the field matches its frame
+                                    const r = 8
+                                    ctx.beginPath()
+                                    ctx.moveTo(r, 0)
+                                    ctx.lineTo(width - r, 0)
+                                    ctx.quadraticCurveTo(width, 0, width, r)
+                                    ctx.lineTo(width, height - r)
+                                    ctx.quadraticCurveTo(width, height, width - r, height)
+                                    ctx.lineTo(r, height)
+                                    ctx.quadraticCurveTo(0, height, 0, height - r)
+                                    ctx.lineTo(0, r)
+                                    ctx.quadraticCurveTo(0, 0, r, 0)
+                                    ctx.closePath()
+                                    ctx.clip()
+
+                                    ctx.fillStyle = hsvToHex(root.customHue, 1, 1)
+                                    ctx.fillRect(0, 0, width, height)
+
+                                    const white = ctx.createLinearGradient(0, 0, width, 0)
+                                    white.addColorStop(0, "#ffffff")
+                                    white.addColorStop(1, "rgba(255,255,255,0)")
+                                    ctx.fillStyle = white
+                                    ctx.fillRect(0, 0, width, height)
+
+                                    const black = ctx.createLinearGradient(0, 0, 0, height)
+                                    black.addColorStop(0, "rgba(0,0,0,0)")
+                                    black.addColorStop(1, "#000000")
+                                    ctx.fillStyle = black
+                                    ctx.fillRect(0, 0, width, height)
+                                }
+                            }
+
+                            Rectangle {
+                                anchors.fill: parent
+                                radius: 8
+                                color: "transparent"
+                                border.width: 1
+                                border.color: Qt.alpha(Theme.fg, 0.16)
+                            }
+
+                            Rectangle {
+                                x: Math.min(Math.max(
+                                        root.customSat / 100 * svArea.width,
+                                        width / 2),
+                                        svArea.width - width / 2) - width / 2
+                                y: Math.min(Math.max(
+                                        (1 - root.customVal / 100) * svArea.height,
+                                        height / 2),
+                                        svArea.height - height / 2) - height / 2
+                                width: 14
+                                height: 14
+                                radius: 7
+                                color: "#00000033"
+                                border.width: 2
+                                border.color: "#ffffff"
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+
+                                function pick(mx, my) {
+                                    root.customSat = Math.round(Math.min(Math.max(
+                                        mx / width, 0), 1) * 100)
+                                    root.customVal = Math.round((1 - Math.min(Math.max(
+                                        my / height, 0), 1)) * 100)
+                                }
+
+                                onPressed: mouse => pick(mouse.x, mouse.y)
+                                onPositionChanged: mouse => {
+                                    if (pressed)
+                                        pick(mouse.x, mouse.y)
+                                }
+                            }
+                        }
+
+                        Column {
+                            width: parent.width - svArea.width - parent.spacing
+                            height: parent.height
+                            spacing: 8
+
+                            Row {
+                                spacing: 10
+
+                                Rectangle {
+                                    id: customPreview
+                                    width: 54
+                                    height: 22
+                                    radius: 6
+                                    color: root.customHex
+                                    border.width: 1
+                                    border.color: Qt.alpha(Theme.fg, 0.25)
+                                }
+
+                                Text {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: root.customHex.toUpperCase()
+                                    color: Theme.fg
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: 11
+                                    font.bold: true
+                                }
+                            }
+
+                            Text {
+                                text: "Hue"
+                                color: Qt.alpha(Theme.fg, 0.6)
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 10
+                            }
+
+                            Item {
+                                width: parent.width
+                                height: 16
+
+                                Rectangle {
+                                    id: hueBar
+                                    anchors.fill: parent
+                                    radius: 5
+                                    border.width: 1
+                                    border.color: Qt.alpha(Theme.fg, 0.16)
+                                    gradient: Gradient {
+                                        orientation: Gradient.Horizontal
+                                        GradientStop { position: 0.00; color: "#ff0000" }
+                                        GradientStop { position: 0.17; color: "#ffff00" }
+                                        GradientStop { position: 0.33; color: "#00ff00" }
+                                        GradientStop { position: 0.50; color: "#00ffff" }
+                                        GradientStop { position: 0.67; color: "#0000ff" }
+                                        GradientStop { position: 0.83; color: "#ff00ff" }
+                                        GradientStop { position: 1.00; color: "#ff0000" }
+                                    }
+                                }
+
+                                Rectangle {
+                                    x: Math.min(Math.max(
+                                            root.customHue / 360 * hueBar.width,
+                                            width / 2),
+                                            hueBar.width - width / 2) - width / 2
+                                    anchors.verticalCenter: hueBar.verticalCenter
+                                    width: 10
+                                    height: 20
+                                    radius: 5
+                                    color: "#00000055"
+                                    border.width: 2
+                                    border.color: "#ffffff"
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+
+                                    function pick(mx) {
+                                        root.customHue = Math.round(Math.min(Math.max(
+                                            mx / width, 0), 1) * 360)
+                                    }
+
+                                    onPressed: mouse => pick(mouse.x)
+                                    onPositionChanged: mouse => {
+                                        if (pressed)
+                                            pick(mouse.x)
+                                    }
+                                }
+                            }
+
+                            Text {
+                                text: "Saturation × brightness"
+                                color: Qt.alpha(Theme.fg, 0.4)
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 9
+                            }
+
+                            Row {
+                                spacing: 8
+
+                                Rectangle {
+                                    width: 90
+                                    height: 24
+                                    radius: 6
+                                    color: root.customHex
+                                    border.width: 1
+                                    border.color: Qt.alpha(Theme.fg, 0.2)
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: "Apply"
+                                        color: root.customVal > 55 ? Theme.bg : Theme.fg
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: 10
+                                        font.bold: true
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        onClicked: root.applyCustom()
+                                    }
+                                }
+
+                                Rectangle {
+                                    width: 90
+                                    height: 24
+                                    radius: 6
+                                    color: "transparent"
+                                    border.width: 1
+                                    border.color: Qt.alpha(Theme.fg, 0.3)
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: "Cancel"
+                                        color: Theme.fg
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: 10
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        onClicked: root.customOpen = false
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            GridView {
+                id: grid
+                width: parent.width
+                height: parent.height - themeBlock.height - customPanel.height
+                        - (customPanel.height > 0 ? parent.spacing : 0)
+                clip: true
+                cellWidth: 176
+                cellHeight: 103
+                cacheBuffer: 4000
+                model: root.wallpapers
+
+                delegate: Item {
+                    id: cell
+                    required property string modelData
+                    readonly property bool busy: root.applyingPath === modelData
+                    width: grid.cellWidth
+                    height: grid.cellHeight
+
+                    Rectangle {
                         anchors.fill: parent
-                        hoverEnabled: true
-                        onClicked: root.apply(cell.modelData)
+                        anchors.margins: 4
+                        radius: 6
+                        color: Qt.alpha(Theme.fg, 0.06)
+
+                        Image {
+                            anchors.fill: parent
+                            anchors.margins: 1
+                            source: "file://" + cell.modelData
+                            sourceSize.width: 340
+                            fillMode: Image.PreserveAspectCrop
+                            asynchronous: true
+                            clip: true
+                        }
+
+                        Rectangle {
+                            anchors.fill: parent
+                            radius: 6
+                            color: "transparent"
+                            border.width: cell.busy ? 3 : mouse.containsMouse ? 2 : 0
+                            border.color: cell.busy ? Theme.accent : Qt.alpha(Theme.accent, 0.8)
+
+                            SequentialAnimation on opacity {
+                                running: cell.busy
+                                loops: Animation.Infinite
+                                alwaysRunToEnd: true
+                                NumberAnimation { to: 0.4; duration: 350 }
+                                NumberAnimation { to: 1.0; duration: 350 }
+                            }
+                        }
+
+                        MouseArea {
+                            id: mouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            onClicked: root.apply(cell.modelData)
+                        }
                     }
                 }
             }
         }
+
     }
 
     // --- palette math ---
@@ -193,6 +747,35 @@ Popout {
         else if (h < 300) { r = x; g = 0; b = c }
         else { r = c; g = 0; b = x }
         const to = v => Math.round((v + m) * 255).toString(16).padStart(2, "0")
+        return "#" + to(r) + to(g) + to(b)
+    }
+
+    function rgbToHsv(r, g, b) {
+        const mx = Math.max(r, g, b), mn = Math.min(r, g, b)
+        const d = mx - mn
+        let h = 0
+        if (d !== 0) {
+            if (mx === r) h = ((g - b) / d + (g < b ? 6 : 0))
+            else if (mx === g) h = (b - r) / d + 2
+            else h = (r - g) / d + 4
+            h *= 60
+        }
+        return [h, mx === 0 ? 0 : d / mx, mx]
+    }
+
+    function hsvToHex(h, s, v) {
+        h = ((h % 360) + 360) % 360
+        const c = v * s
+        const x = c * (1 - Math.abs((h / 60) % 2 - 1))
+        const m = v - c
+        let r, g, b
+        if (h < 60) { r = c; g = x; b = 0 }
+        else if (h < 120) { r = x; g = c; b = 0 }
+        else if (h < 180) { r = 0; g = c; b = x }
+        else if (h < 240) { r = 0; g = x; b = c }
+        else if (h < 300) { r = x; g = 0; b = c }
+        else { r = c; g = 0; b = x }
+        const to = val => Math.round((val + m) * 255).toString(16).padStart(2, "0")
         return "#" + to(r) + to(g) + to(b)
     }
 

@@ -1,4 +1,5 @@
 singleton Theme Theme.qml
+singleton ColorThemes ColorThemes.qml
 singleton Wm Wm.qml
 singleton Sys Sys.qml
 Bar Bar.qml
@@ -13,6 +14,7 @@ Tray Tray.qml
 Clock Clock.qml
 CalendarPopup CalendarPopup.qml
 Launcher Launcher.qml
+AaMark AaMark.qml
 WallpaperPicker WallpaperPicker.qml
 PowerButton PowerButton.qml
 Screenshot Screenshot.qml

@@ -3,8 +3,8 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// Minimal copy of the bar's Theme singleton: live palette from colors.ini,
-// so the network window follows the wallpaper theming.
+// Minimal copy of the bar's Theme singleton: live palette from
+// theme/colors.ini, so the network window follows the wallpaper theming.
 Singleton {
     id: root
 
@@ -16,18 +16,18 @@ Singleton {
         return sd.substring(0, sd.lastIndexOf("/"))
     }
 
-    property color bg: "#0d1117"
-    property color altbg: "#161b22"
-    property color fg: "#c9d1d9"
-    property color accent: "#58a6ff"
-    property color green: "#8b949e"
-    property color alert: "#f85149"
-    property color disabled: "#484f58"
+    property color bg: "#222225"
+    property color altbg: "#26262a"
+    property color fg: "#e8e9ed"
+    property color accent: "#d70a53"
+    property color green: "#e5c07b"
+    property color alert: "#ff6b9d"
+    property color disabled: "#5c5c64"
 
     readonly property string fontFamily: "JetBrainsMono Nerd Font"
 
     FileView {
-        path: root.configDir + "/polybar/colors.ini"
+        path: root.configDir + "/theme/colors.ini"
         watchChanges: true
         onFileChanged: reload()
         onLoaded: root.parseIni(text())

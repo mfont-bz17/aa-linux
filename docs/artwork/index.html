@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>aa-linux artwork — logo, themes, and wallpapers</title>
+<meta name="description" content="Artwork for aa-linux: the rounded A + Tux logo, icon, badge, inverse, transparent, A-only fallback, horizontal lockup, eight desktop color themes, and matching Redline wallpapers.">
+<meta name="theme-color" content="#222225">
+<link rel="icon" href="assets/logo-icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="../" aria-label="aa-linux project">
+      <img src="assets/logo-icon.svg" width="50" height="50" alt="">
+      <span>aa-linux</span>
+      <span class="crumb">/ artwork</span>
+    </a>
+    <nav class="topnav" aria-label="Artwork page">
+      <a href="#mark">Mark</a>
+      <a href="#variations">Variations</a>
+      <a href="#lockup">Lockup</a>
+      <a href="#color">Color</a>
+      <a href="#themes">Themes</a>
+      <a href="#wallpapers">Wallpapers</a>
+      <a href="#usage">Usage</a>
+      <a href="#downloads">Downloads</a>
+    </nav>
+    <a class="btn" href="../">Back to project</a>
+  </div>
+</header>
+
+<main class="wrap" id="main">
+  <section class="hero" id="mark">
+    <div>
+      <p class="kicker">artwork / logo, themes, wallpapers</p>
+      <h1>aa-linux</h1>
+      <p class="hero-sub">Rounded A + Tux</p>
+      <p class="lede">
+        The selected mark combines the rounded A-shaped road, the real Tux mascot,
+        and the terminal cursor. This page collects the primary mark and the
+        practical derivatives for favicons, repository avatars, and lockups,
+        plus the eight desktop color themes and matching Redline wallpapers.
+      </p>
+      <div class="tags">
+        <span class="tag">selected mark</span>
+        <span class="tag">8 color themes</span>
+        <span class="tag">8 wallpapers</span>
+        <span class="tag">Debian red reference</span>
+        <span class="tag">no affiliation implied</span>
+      </div>
+      <div class="actions">
+        <a class="btn btn--primary" href="assets/logo-primary.svg">Primary SVG</a>
+        <a class="btn" href="assets/logo-primary-512.png">PNG 512</a>
+        <a class="btn" href="#themes">Themes</a>
+        <a class="btn" href="#wallpapers">Wallpapers</a>
+        <a class="btn" href="#downloads">All downloads</a>
+      </div>
+    </div>
+    <div class="hero-mark">
+      <img src="assets/logo-primary.svg" width="300" height="300" alt="The aa-linux logo: a rounded Debian-red A with Tux centered at the bottom">
+    </div>
+  </section>
+
+  <section class="section" id="variations">
+    <h2>Variations</h2>
+    <p>
+      Use the primary mark wherever the badge has room. The icon drops the cursor
+      for small favicons. The badge variant rounds the outer square for app-icon
+      and avatar surfaces.
+    </p>
+
+    <div class="asset-grid">
+      <article class="asset-card">
+        <header><h3>Primary</h3><span>square badge</span></header>
+        <div class="preview"><img src="assets/logo-primary.svg" alt="Primary mark with square badge and full cursor"></div>
+        <div class="asset-body">
+          <p>Default mark. Rounded A, full-color Tux, white cursor. Use at 64px and above.</p>
+          <div class="downloads">
+            <a href="assets/logo-primary.svg">SVG</a>
+            <a href="assets/logo-primary-512.png">PNG 512</a>
+            <a href="assets/logo-primary-128.png">PNG 128</a>
+            <a href="assets/logo-primary-32.png">PNG 32</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="asset-card">
+        <header><h3>Icon</h3><span>favicon</span></header>
+        <div class="preview"><img src="assets/logo-icon.svg" alt="Icon with square badge and no cursor dash"></div>
+        <div class="asset-body">
+          <p>No cursor. Cleaner at 16–32px; use this for the browser tab and small app icons.</p>
+          <div class="downloads">
+            <a href="assets/logo-icon.svg">SVG</a>
+            <a href="assets/logo-icon-512.png">PNG 512</a>
+            <a href="assets/logo-icon-32.png">PNG 32</a>
+            <a href="assets/logo-icon-16.png">PNG 16</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="asset-card">
+        <header><h3>App icon</h3><span>rounded badge</span></header>
+        <div class="preview"><img src="assets/logo-badge.svg" alt="App icon with rounded badge and full cursor"></div>
+        <div class="asset-body">
+          <p>Rounded outer square for repository avatars and launcher surfaces. Keeps the full cursor.</p>
+          <div class="downloads">
+            <a href="assets/logo-badge.svg">SVG</a>
+            <a href="assets/logo-badge-512.png">PNG 512</a>
+            <a href="assets/logo-badge-128.png">PNG 128</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="asset-card">
+        <header><h3>Inverse</h3><span>red surface</span></header>
+        <div class="preview"><img src="assets/logo-inverse.svg" alt="Inverse mark with a Debian-red badge and white A"></div>
+        <div class="asset-body">
+          <p>Red badge, white A, full-color Tux. Use when the surrounding surface needs a stronger red block.</p>
+          <div class="downloads">
+            <a href="assets/logo-inverse.svg">SVG</a>
+            <a href="assets/logo-inverse-512.png">PNG 512</a>
+            <a href="assets/logo-inverse-128.png">PNG 128</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="asset-card">
+        <header><h3>Transparent mark</h3><span>dark surfaces</span></header>
+        <div class="preview preview--checker"><img src="assets/logo-mark.svg" alt="Transparent mark without the badge background"></div>
+        <div class="asset-body">
+          <p>No badge. For placing the mark directly on dark surfaces or inside another layout.</p>
+          <div class="downloads">
+            <a href="assets/logo-mark.svg">SVG</a>
+            <a href="assets/logo-mark-512.png">PNG 512</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="asset-card">
+        <header><h3>A-only fallback</h3><span>16px</span></header>
+        <div class="preview"><img src="assets/logo-a-only.svg" alt="A-only fallback without Tux"></div>
+        <div class="asset-body">
+          <p>Use only when Tux becomes illegible. The red rounded A and white cursor survive at 16px.</p>
+          <div class="downloads">
+            <a href="assets/logo-a-only.svg">SVG</a>
+            <a href="assets/logo-a-only-512.png">PNG 512</a>
+            <a href="assets/logo-a-only-32.png">PNG 32</a>
+            <a href="assets/logo-a-only-16.png">PNG 16</a>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" id="lockup">
+    <h2>Lockup</h2>
+    <p>
+      The horizontal lockup pairs the primary mark with an outlined DejaVu Sans
+      Mono Bold wordmark. The wordmark is converted to paths, so the file does not
+      depend on a system font.
+    </p>
+
+    <div class="lockup-grid">
+      <figure class="lockup-panel lockup-panel--dark">
+        <img src="assets/logo-lockup.svg" alt="Horizontal aa-linux lockup for dark surfaces">
+        <figcaption>Dark-surface lockup / white wordmark</figcaption>
+      </figure>
+      <figure class="lockup-panel lockup-panel--light">
+        <img src="assets/logo-lockup-light.svg" alt="Horizontal aa-linux lockup for light surfaces">
+        <figcaption>Light-surface lockup / dark wordmark</figcaption>
+      </figure>
+    </div>
+
+    <div class="downloads downloads--spaced">
+      <a href="assets/logo-lockup.svg">Dark SVG</a>
+      <a href="assets/logo-lockup-864.png">Dark PNG 864</a>
+      <a href="assets/logo-lockup-light.svg">Light SVG</a>
+      <a href="assets/logo-lockup-light-864.png">Light PNG 864</a>
+    </div>
+  </section>
+
+  <section class="section" id="color">
+    <h2>Color</h2>
+    <p>
+      The primary accent is Debian red. The deeper red is available for borders
+      and darker surfaces. Tux keeps its original black, white, and amber artwork.
+    </p>
+
+    <div class="palette">
+      <div class="swatch"><div class="swatch-color sw-red"></div><div class="swatch-text"><strong>Debian red</strong><span>#D70A53</span></div></div>
+      <div class="swatch"><div class="swatch-color sw-deep"></div><div class="swatch-text"><strong>Deep red</strong><span>#A80030</span></div></div>
+      <div class="swatch"><div class="swatch-color sw-bg"></div><div class="swatch-text"><strong>Surface</strong><span>#222225</span></div></div>
+      <div class="swatch"><div class="swatch-color sw-fg"></div><div class="swatch-text"><strong>Foreground</strong><span>#E8E9ED</span></div></div>
+      <div class="swatch"><div class="swatch-color sw-white"></div><div class="swatch-text"><strong>Tux white</strong><span>#FFFFFF</span></div></div>
+      <div class="swatch"><div class="swatch-color sw-black"></div><div class="swatch-text"><strong>Tux black</strong><span>#111319</span></div></div>
+      <div class="swatch"><div class="swatch-color sw-amber"></div><div class="swatch-text"><strong>Tux amber</strong><span>#E5C07B</span></div></div>
+      <div class="swatch"><div class="swatch-color sw-line"></div><div class="swatch-text"><strong>Frame line</strong><span>#3F3F44</span></div></div>
+    </div>
+
+    <p class="meta-note">
+      Debian red is a color reference only. This project does not use the Debian
+      swirl and is not affiliated with or endorsed by the Debian Project.
+    </p>
+  </section>
+
+  <section class="section" id="themes">
+    <h2>Themes</h2>
+    <p>
+      Each desktop theme is a complete eight-key palette. The eight bundled
+      presets are named after their wallpapers, so picking a colorway in the
+      wallpaper picker recolors the bar, popups, window theme, terminal colors,
+      and onboarding keyboard together. <code>Theme.qml</code> watches
+      <code>theme/colors.ini</code> and updates live with no restart.
+    </p>
+
+    <div class="theme-grid">
+      <article class="asset-card theme-card">
+        <header><h3>Redline</h3><span>#D70A53</span></header>
+        <div class="theme-strip" aria-hidden="true">
+          <span style="background:#222225"></span>
+          <span style="background:#26262a"></span>
+          <span style="background:#e8e9ed"></span>
+          <span style="background:#3f3f44"></span>
+          <span style="background:#d70a53"></span>
+          <span style="background:#e5c07b"></span>
+          <span style="background:#ff6b9d"></span>
+          <span style="background:#5c5c64"></span>
+        </div>
+        <div class="asset-body">
+          <p>Default. Debian red on the carbon surface used by the project site.</p>
+          <ul class="theme-tokens">
+            <li><span class="chip" style="background:#222225"></span>bg <code>#222225</code></li>
+            <li><span class="chip" style="background:#26262a"></span>alt <code>#26262A</code></li>
+            <li><span class="chip" style="background:#e8e9ed"></span>fg <code>#E8E9ED</code></li>
+            <li><span class="chip" style="background:#3f3f44"></span>border <code>#3F3F44</code></li>
+            <li><span class="chip" style="background:#d70a53"></span>primary <code>#D70A53</code></li>
+            <li><span class="chip" style="background:#e5c07b"></span>secondary <code>#E5C07B</code></li>
+            <li><span class="chip" style="background:#ff6b9d"></span>alert <code>#FF6B9D</code></li>
+            <li><span class="chip" style="background:#5c5c64"></span>disabled <code>#5C5C64</code></li>
+          </ul>
+          <div class="downloads">
+            <a href="wallpapers/aa-linux-redline.svg">Wallpaper SVG</a>
+            <a href="wallpapers/aa-linux-redline.png">PNG 2560</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="asset-card theme-card">
+        <header><h3>Cobalt</h3><span>#5C9DFF</span></header>
+        <div class="theme-strip" aria-hidden="true">
+          <span style="background:#1d222b"></span>
+          <span style="background:#222834"></span>
+          <span style="background:#e6ebf5"></span>
+          <span style="background:#343d4e"></span>
+          <span style="background:#5c9dff"></span>
+          <span style="background:#8be9fd"></span>
+          <span style="background:#ff7a9c"></span>
+          <span style="background:#586274"></span>
+        </div>
+        <div class="asset-body">
+          <p>Electric blue on deep navy, with a cyan secondary and pink alert.</p>
+          <ul class="theme-tokens">
+            <li><span class="chip" style="background:#1d222b"></span>bg <code>#1D222B</code></li>
+            <li><span class="chip" style="background:#222834"></span>alt <code>#222834</code></li>
+            <li><span class="chip" style="background:#e6ebf5"></span>fg <code>#E6EBF5</code></li>
+            <li><span class="chip" style="background:#343d4e"></span>border <code>#343D4E</code></li>
+            <li><span class="chip" style="background:#5c9dff"></span>primary <code>#5C9DFF</code></li>
+            <li><span class="chip" style="background:#8be9fd"></span>secondary <code>#8BE9FD</code></li>
+            <li><span class="chip" style="background:#ff7a9c"></span>alert <code>#FF7A9C</code></li>
+            <li><span class="chip" style="background:#586274"></span>disabled <code>#586274</code></li>
+          </ul>
+          <div class="downloads">
+            <a href="wallpapers/aa-linux-cobalt.svg">Wallpaper SVG</a>
+            <a href="wallpapers/aa-linux-cobalt.png">PNG 2560</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="asset-card theme-card">
+        <header><h3>Mint</h3><span>#4FD1A1</span></header>
+        <div class="theme-strip" aria-hidden="true">
+          <span style="background:#1d2623"></span>
+          <span style="background:#222d29"></span>
+          <span style="background:#e5f0ea"></span>
+          <span style="background:#34443d"></span>
+          <span style="background:#4fd1a1"></span>
+          <span style="background:#e5c07b"></span>
+          <span style="background:#ff8a80"></span>
+          <span style="background:#56665f"></span>
+        </div>
+        <div class="asset-body">
+          <p>Soft green on dark teal, with a warm gold secondary.</p>
+          <ul class="theme-tokens">
+            <li><span class="chip" style="background:#1d2623"></span>bg <code>#1D2623</code></li>
+            <li><span class="chip" style="background:#222d29"></span>alt <code>#222D29</code></li>
+            <li><span class="chip" style="background:#e5f0ea"></span>fg <code>#E5F0EA</code></li>
+            <li><span class="chip" style="background:#34443d"></span>border <code>#34443D</code></li>
+            <li><span class="chip" style="background:#4fd1a1"></span>primary <code>#4FD1A1</code></li>
+            <li><span class="chip" style="background:#e5c07b"></span>secondary <code>#E5C07B</code></li>
+            <li><span class="chip" style="background:#ff8a80"></span>alert <code>#FF8A80</code></li>
+            <li><span class="chip" style="background:#56665f"></span>disabled <code>#56665F</code></li>
+          </ul>
+          <div class="downloads">
+            <a href="wallpapers/aa-linux-mint.svg">Wallpaper SVG</a>
+            <a href="wallpapers/aa-linux-mint.png">PNG 2560</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="asset-card theme-card">
+        <header><h3>Violet</h3><span>#B68CFF</span></header>
+        <div class="theme-strip" aria-hidden="true">
+          <span style="background:#241f2b"></span>
+          <span style="background:#2a2433"></span>
+          <span style="background:#eee8f6"></span>
+          <span style="background:#40364d"></span>
+          <span style="background:#b68cff"></span>
+          <span style="background:#ff9ecb"></span>
+          <span style="background:#ff6b9d"></span>
+          <span style="background:#655c73"></span>
+        </div>
+        <div class="asset-body">
+          <p>Lavender accent on plum, with a pink secondary.</p>
+          <ul class="theme-tokens">
+            <li><span class="chip" style="background:#241f2b"></span>bg <code>#241F2B</code></li>
+            <li><span class="chip" style="background:#2a2433"></span>alt <code>#2A2433</code></li>
+            <li><span class="chip" style="background:#eee8f6"></span>fg <code>#EEE8F6</code></li>
+            <li><span class="chip" style="background:#40364d"></span>border <code>#40364D</code></li>
+            <li><span class="chip" style="background:#b68cff"></span>primary <code>#B68CFF</code></li>
+            <li><span class="chip" style="background:#ff9ecb"></span>secondary <code>#FF9ECB</code></li>
+            <li><span class="chip" style="background:#ff6b9d"></span>alert <code>#FF6B9D</code></li>
+            <li><span class="chip" style="background:#655c73"></span>disabled <code>#655C73</code></li>
+          </ul>
+          <div class="downloads">
+            <a href="wallpapers/aa-linux-violet.svg">Wallpaper SVG</a>
+            <a href="wallpapers/aa-linux-violet.png">PNG 2560</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="asset-card theme-card">
+        <header><h3>Ember</h3><span>#FF8A4C</span></header>
+        <div class="theme-strip" aria-hidden="true">
+          <span style="background:#2a211d"></span>
+          <span style="background:#302722"></span>
+          <span style="background:#f3ebe5"></span>
+          <span style="background:#493a32"></span>
+          <span style="background:#ff8a4c"></span>
+          <span style="background:#e5c07b"></span>
+          <span style="background:#ff6b6b"></span>
+          <span style="background:#6d5c53"></span>
+        </div>
+        <div class="asset-body">
+          <p>Warm orange on charcoal brown, with gold and coral accents.</p>
+          <ul class="theme-tokens">
+            <li><span class="chip" style="background:#2a211d"></span>bg <code>#2A211D</code></li>
+            <li><span class="chip" style="background:#302722"></span>alt <code>#302722</code></li>
+            <li><span class="chip" style="background:#f3ebe5"></span>fg <code>#F3EBE5</code></li>
+            <li><span class="chip" style="background:#493a32"></span>border <code>#493A32</code></li>
+            <li><span class="chip" style="background:#ff8a4c"></span>primary <code>#FF8A4C</code></li>
+            <li><span class="chip" style="background:#e5c07b"></span>secondary <code>#E5C07B</code></li>
+            <li><span class="chip" style="background:#ff6b6b"></span>alert <code>#FF6B6B</code></li>
+            <li><span class="chip" style="background:#6d5c53"></span>disabled <code>#6D5C53</code></li>
+          </ul>
+          <div class="downloads">
+            <a href="wallpapers/aa-linux-ember.svg">Wallpaper SVG</a>
+            <a href="wallpapers/aa-linux-ember.png">PNG 2560</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="asset-card theme-card">
+        <header><h3>Ice</h3><span>#7BDCFF</span></header>
+        <div class="theme-strip" aria-hidden="true">
+          <span style="background:#1c242b"></span>
+          <span style="background:#212b33"></span>
+          <span style="background:#e5f2f8"></span>
+          <span style="background:#32434f"></span>
+          <span style="background:#7bdcff"></span>
+          <span style="background:#b7c9ff"></span>
+          <span style="background:#ff6b9d"></span>
+          <span style="background:#566773"></span>
+        </div>
+        <div class="asset-body">
+          <p>Pale cyan on slate blue, with a periwinkle secondary.</p>
+          <ul class="theme-tokens">
+            <li><span class="chip" style="background:#1c242b"></span>bg <code>#1C242B</code></li>
+            <li><span class="chip" style="background:#212b33"></span>alt <code>#212B33</code></li>
+            <li><span class="chip" style="background:#e5f2f8"></span>fg <code>#E5F2F8</code></li>
+            <li><span class="chip" style="background:#32434f"></span>border <code>#32434F</code></li>
+            <li><span class="chip" style="background:#7bdcff"></span>primary <code>#7BDCFF</code></li>
+            <li><span class="chip" style="background:#b7c9ff"></span>secondary <code>#B7C9FF</code></li>
+            <li><span class="chip" style="background:#ff6b9d"></span>alert <code>#FF6B9D</code></li>
+            <li><span class="chip" style="background:#566773"></span>disabled <code>#566773</code></li>
+          </ul>
+          <div class="downloads">
+            <a href="wallpapers/aa-linux-ice.svg">Wallpaper SVG</a>
+            <a href="wallpapers/aa-linux-ice.png">PNG 2560</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="asset-card theme-card">
+        <header><h3>Sand</h3><span>#E0B35A</span></header>
+        <div class="theme-strip" aria-hidden="true">
+          <span style="background:#27231d"></span>
+          <span style="background:#2e2922"></span>
+          <span style="background:#f1ece3"></span>
+          <span style="background:#453d32"></span>
+          <span style="background:#e0b35a"></span>
+          <span style="background:#d9a441"></span>
+          <span style="background:#ff8a65"></span>
+          <span style="background:#6a6154"></span>
+        </div>
+        <div class="asset-body">
+          <p>Desert gold on warm brown, with a darker gold secondary.</p>
+          <ul class="theme-tokens">
+            <li><span class="chip" style="background:#27231d"></span>bg <code>#27231D</code></li>
+            <li><span class="chip" style="background:#2e2922"></span>alt <code>#2E2922</code></li>
+            <li><span class="chip" style="background:#f1ece3"></span>fg <code>#F1ECE3</code></li>
+            <li><span class="chip" style="background:#453d32"></span>border <code>#453D32</code></li>
+            <li><span class="chip" style="background:#e0b35a"></span>primary <code>#E0B35A</code></li>
+            <li><span class="chip" style="background:#d9a441"></span>secondary <code>#D9A441</code></li>
+            <li><span class="chip" style="background:#ff8a65"></span>alert <code>#FF8A65</code></li>
+            <li><span class="chip" style="background:#6a6154"></span>disabled <code>#6A6154</code></li>
+          </ul>
+          <div class="downloads">
+            <a href="wallpapers/aa-linux-sand.svg">Wallpaper SVG</a>
+            <a href="wallpapers/aa-linux-sand.png">PNG 2560</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="asset-card theme-card">
+        <header><h3>Blush</h3><span>#FF6B9D</span></header>
+        <div class="theme-strip" aria-hidden="true">
+          <span style="background:#2a2024"></span>
+          <span style="background:#31252a"></span>
+          <span style="background:#f4e8ec"></span>
+          <span style="background:#4a3540"></span>
+          <span style="background:#ff6b9d"></span>
+          <span style="background:#ffb3c7"></span>
+          <span style="background:#ff8a80"></span>
+          <span style="background:#6d5862"></span>
+        </div>
+        <div class="asset-body">
+          <p>Rose pink on mauve, with a soft pink secondary.</p>
+          <ul class="theme-tokens">
+            <li><span class="chip" style="background:#2a2024"></span>bg <code>#2A2024</code></li>
+            <li><span class="chip" style="background:#31252a"></span>alt <code>#31252A</code></li>
+            <li><span class="chip" style="background:#f4e8ec"></span>fg <code>#F4E8EC</code></li>
+            <li><span class="chip" style="background:#4a3540"></span>border <code>#4A3540</code></li>
+            <li><span class="chip" style="background:#ff6b9d"></span>primary <code>#FF6B9D</code></li>
+            <li><span class="chip" style="background:#ffb3c7"></span>secondary <code>#FFB3C7</code></li>
+            <li><span class="chip" style="background:#ff8a80"></span>alert <code>#FF8A80</code></li>
+            <li><span class="chip" style="background:#6d5862"></span>disabled <code>#6D5862</code></li>
+          </ul>
+          <div class="downloads">
+            <a href="wallpapers/aa-linux-blush.svg">Wallpaper SVG</a>
+            <a href="wallpapers/aa-linux-blush.png">PNG 2560</a>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <p class="meta-note">
+      Presets live in <code>openbox-desktop/config/quickshell/ColorThemes.qml</code>
+      and write <code>openbox-desktop/config/theme/colors.ini</code>. Picking a
+      non-preset wallpaper instead derives a palette from the image, and the
+      <strong>Custom</strong> swatch derives one from a hue/saturation picker.
+      The wallpaper strip shows the eight palette keys in order: background,
+      background-alt, foreground, border, primary, secondary, alert, disabled.
+    </p>
+  </section>
+
+  <section class="section" id="wallpapers">
+    <h2>Wallpapers</h2>
+    <p>
+      Eight Redline wallpapers, one per color theme. Each is built from the
+      aa-linux mark and its theme palette, with no text so the desktop chrome
+      can sit on top. The SVGs are editable sources; PNG exports are
+      2560 × 1440. The bundled desktop uses 1280 × 720 JPEG copies from
+      <code>openbox-desktop/config/wallpaper/</code>.
+    </p>
+
+    <div class="wall-grid">
+      <figure class="asset-card wall-card">
+        <header><h3>Redline</h3><span>2560 × 1440</span></header>
+        <div class="wall-preview"><img src="wallpapers/aa-linux-redline.svg" alt="Redline wallpaper: Debian-red field with a cropped A and carbon badge" loading="lazy" decoding="async"></div>
+        <figcaption class="asset-body">
+          <p>Debian-red field, cropped A, carbon badge. The default colorway.</p>
+          <div class="downloads">
+            <a href="wallpapers/aa-linux-redline.svg">SVG</a>
+            <a href="wallpapers/aa-linux-redline.png">PNG 2560</a>
+          </div>
+        </figcaption>
+      </figure>
+
+      <figure class="asset-card wall-card">
+        <header><h3>Cobalt</h3><span>2560 × 1440</span></header>
+        <div class="wall-preview"><img src="wallpapers/aa-linux-cobalt.svg" alt="Cobalt wallpaper: deep navy field with a cropped A and carbon badge" loading="lazy" decoding="async"></div>
+        <figcaption class="asset-body">
+          <p>Deep navy field, cropped A, carbon badge.</p>
+          <div class="downloads">
+            <a href="wallpapers/aa-linux-cobalt.svg">SVG</a>
+            <a href="wallpapers/aa-linux-cobalt.png">PNG 2560</a>
+          </div>
+        </figcaption>
+      </figure>
+
+      <figure class="asset-card wall-card">
+        <header><h3>Mint</h3><span>2560 × 1440</span></header>
+        <div class="wall-preview"><img src="wallpapers/aa-linux-mint.svg" alt="Mint wallpaper: dark teal field with a cropped A and carbon badge" loading="lazy" decoding="async"></div>
+        <figcaption class="asset-body">
+          <p>Dark teal field, cropped A, carbon badge.</p>
+          <div class="downloads">
+            <a href="wallpapers/aa-linux-mint.svg">SVG</a>
+            <a href="wallpapers/aa-linux-mint.png">PNG 2560</a>
+          </div>
+        </figcaption>
+      </figure>
+
+      <figure class="asset-card wall-card">
+        <header><h3>Violet</h3><span>2560 × 1440</span></header>
+        <div class="wall-preview"><img src="wallpapers/aa-linux-violet.svg" alt="Violet wallpaper: plum field with a cropped A and carbon badge" loading="lazy" decoding="async"></div>
+        <figcaption class="asset-body">
+          <p>Plum field, cropped A, carbon badge.</p>
+          <div class="downloads">
+            <a href="wallpapers/aa-linux-violet.svg">SVG</a>
+            <a href="wallpapers/aa-linux-violet.png">PNG 2560</a>
+          </div>
+        </figcaption>
+      </figure>
+
+      <figure class="asset-card wall-card">
+        <header><h3>Ember</h3><span>2560 × 1440</span></header>
+        <div class="wall-preview"><img src="wallpapers/aa-linux-ember.svg" alt="Ember wallpaper: warm charcoal field with a cropped A and carbon badge" loading="lazy" decoding="async"></div>
+        <figcaption class="asset-body">
+          <p>Warm charcoal field, cropped A, carbon badge.</p>
+          <div class="downloads">
+            <a href="wallpapers/aa-linux-ember.svg">SVG</a>
+            <a href="wallpapers/aa-linux-ember.png">PNG 2560</a>
+          </div>
+        </figcaption>
+      </figure>
+
+      <figure class="asset-card wall-card">
+        <header><h3>Ice</h3><span>2560 × 1440</span></header>
+        <div class="wall-preview"><img src="wallpapers/aa-linux-ice.svg" alt="Ice wallpaper: slate-blue field with a cropped A and carbon badge" loading="lazy" decoding="async"></div>
+        <figcaption class="asset-body">
+          <p>Slate-blue field, cropped A, carbon badge.</p>
+          <div class="downloads">
+            <a href="wallpapers/aa-linux-ice.svg">SVG</a>
+            <a href="wallpapers/aa-linux-ice.png">PNG 2560</a>
+          </div>
+        </figcaption>
+      </figure>
+
+      <figure class="asset-card wall-card">
+        <header><h3>Sand</h3><span>2560 × 1440</span></header>
+        <div class="wall-preview"><img src="wallpapers/aa-linux-sand.svg" alt="Sand wallpaper: warm brown field with a cropped A and carbon badge" loading="lazy" decoding="async"></div>
+        <figcaption class="asset-body">
+          <p>Warm brown field, cropped A, carbon badge.</p>
+          <div class="downloads">
+            <a href="wallpapers/aa-linux-sand.svg">SVG</a>
+            <a href="wallpapers/aa-linux-sand.png">PNG 2560</a>
+          </div>
+        </figcaption>
+      </figure>
+
+      <figure class="asset-card wall-card">
+        <header><h3>Blush</h3><span>2560 × 1440</span></header>
+        <div class="wall-preview"><img src="wallpapers/aa-linux-blush.svg" alt="Blush wallpaper: mauve field with a cropped A and carbon badge" loading="lazy" decoding="async"></div>
+        <figcaption class="asset-body">
+          <p>Mauve field, cropped A, carbon badge.</p>
+          <div class="downloads">
+            <a href="wallpapers/aa-linux-blush.svg">SVG</a>
+            <a href="wallpapers/aa-linux-blush.png">PNG 2560</a>
+          </div>
+        </figcaption>
+      </figure>
+    </div>
+
+    <p class="meta-note">
+      The Tux artwork is inlined from the transparent mark. Keep the attribution
+      in <code>THIRD_PARTY_NOTICES.md</code> with any redistribution. See
+      <a href="wallpapers/README.md">wallpapers/README.md</a> for the source
+      notes and file map.
+    </p>
+  </section>
+
+  <section class="section" id="sizing">
+    <h2>Sizing</h2>
+    <p>
+      Use 64px or larger when Tux details matter. The icon works at 32px; below
+      that, switch to the A-only fallback.
+    </p>
+
+    <div class="size-row">
+      <div class="size size--128"><img src="assets/logo-primary-128.png" width="128" height="128" alt="Primary mark at 128 pixels"><span>128 primary</span></div>
+      <div class="size size--64"><img src="assets/logo-primary-64.png" width="64" height="64" alt="Primary mark at 64 pixels"><span>64 primary</span></div>
+      <div class="size size--32"><img src="assets/logo-icon-32.png" width="32" height="32" alt="Icon at 32 pixels"><span>32 icon</span></div>
+      <div class="size size--16"><img src="assets/logo-a-only-16.png" width="16" height="16" alt="A-only fallback at 16 pixels"><span>16 A-only</span></div>
+    </div>
+
+    <div class="clearspace">
+      <div class="clearspace-inner"><img src="assets/logo-primary.svg" width="128" height="128" alt="Mark surrounded by clear space"></div>
+    </div>
+    <p class="clearspace-note">Clear space: at least 8 units on a 64-unit artboard (12.5%). Keep other marks and text outside the dashed line.</p>
+  </section>
+
+  <section class="section" id="usage">
+    <h2>Usage</h2>
+    <div class="usage-grid">
+      <div class="usage usage--do">
+        <h3>Do</h3>
+        <ul>
+          <li>Use the primary mark on dark or light surfaces.</li>
+          <li>Use the icon for favicons and the badge for avatars.</li>
+          <li>Keep Tux in the original black, white, and amber.</li>
+          <li>Keep the 12.5% clear space.</li>
+          <li>Use the lockup when the project name is not already adjacent.</li>
+          <li>Use the A-only fallback below 32px.</li>
+        </ul>
+      </div>
+      <div class="usage usage--dont">
+        <h3>Don't</h3>
+        <ul>
+          <li>Recolor Tux or flatten it into the red A.</li>
+          <li>Add gradients, shadows, or outlines to the red A.</li>
+          <li>Rotate, skew, or stretch the mark.</li>
+          <li>Use the Debian swirl or imply Debian affiliation.</li>
+          <li>Imply Google or Android Auto endorsement.</li>
+          <li>Use the detailed primary mark below 32px.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="downloads">
+    <h2>Downloads</h2>
+    <p>SVG is the source format. PNG exports are included for favicons and avatar surfaces.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Asset</th><th>Format</th><th>Files</th><th>Use</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Primary</td>
+            <td>SVG + PNG</td>
+            <td><a href="assets/logo-primary.svg">SVG</a> · <a href="assets/logo-primary-512.png">512</a> · <a href="assets/logo-primary-128.png">128</a> · <a href="assets/logo-primary-32.png">32</a></td>
+            <td>Primary mark, 64px+</td>
+          </tr>
+          <tr>
+            <td>Icon</td>
+            <td>SVG + PNG</td>
+            <td><a href="assets/logo-icon.svg">SVG</a> · <a href="assets/logo-icon-32.png">32</a> · <a href="assets/logo-icon-16.png">16</a></td>
+            <td>Favicon, 32px</td>
+          </tr>
+          <tr>
+            <td>App icon</td>
+            <td>SVG + PNG</td>
+            <td><a href="assets/logo-badge.svg">SVG</a> · <a href="assets/logo-badge-512.png">512</a> · <a href="assets/logo-badge-128.png">128</a></td>
+            <td>Repository avatar, launcher</td>
+          </tr>
+          <tr>
+            <td>Inverse</td>
+            <td>SVG + PNG</td>
+            <td><a href="assets/logo-inverse.svg">SVG</a> · <a href="assets/logo-inverse-512.png">512</a></td>
+            <td>Red surface</td>
+          </tr>
+          <tr>
+            <td>Transparent mark</td>
+            <td>SVG + PNG</td>
+            <td><a href="assets/logo-mark.svg">SVG</a> · <a href="assets/logo-mark-512.png">512</a></td>
+            <td>Dark surfaces</td>
+          </tr>
+          <tr>
+            <td>A-only fallback</td>
+            <td>SVG + PNG</td>
+            <td><a href="assets/logo-a-only.svg">SVG</a> · <a href="assets/logo-a-only-512.png">512</a> · <a href="assets/logo-a-only-32.png">32</a> · <a href="assets/logo-a-only-16.png">16</a></td>
+            <td>16px favicon</td>
+          </tr>
+          <tr>
+            <td>Wallpapers</td>
+            <td>SVG + PNG</td>
+            <td><a href="wallpapers/aa-linux-redline.svg">Redline</a> · <a href="wallpapers/aa-linux-cobalt.svg">Cobalt</a> · <a href="wallpapers/aa-linux-mint.svg">Mint</a> · <a href="wallpapers/aa-linux-violet.svg">Violet</a> · <a href="wallpapers/aa-linux-ember.svg">Ember</a> · <a href="wallpapers/aa-linux-ice.svg">Ice</a> · <a href="wallpapers/aa-linux-sand.svg">Sand</a> · <a href="wallpapers/aa-linux-blush.svg">Blush</a></td>
+            <td>Desktop backgrounds, 2560 × 1440</td>
+          </tr>
+          <tr>
+            <td>Lockup, dark</td>
+            <td>SVG + PNG</td>
+            <td><a href="assets/logo-lockup.svg">SVG</a> · <a href="assets/logo-lockup-864.png">864</a></td>
+            <td>Project header, dark</td>
+          </tr>
+          <tr>
+            <td>Lockup, light</td>
+            <td>SVG + PNG</td>
+            <td><a href="assets/logo-lockup-light.svg">SVG</a> · <a href="assets/logo-lockup-light-864.png">864</a></td>
+            <td>Project header, light</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <p>
+      Tux artwork by Larry Ewing and The GIMP.
+      Permission to use and/or modify is granted with attribution. See
+      <a href="https://github.com/mfont-bz17/aa-linux/blob/main/THIRD_PARTY_NOTICES.md">THIRD_PARTY_NOTICES.md</a>.
+    </p>
+    <p>
+      Debian red is used as a color reference only; no Debian swirl or affiliation
+      is implied. aa-linux is not affiliated with or endorsed by Google or the
+      Android Auto project.
+    </p>
+    <p>
+      <a href="../">Project page</a> ·
+      <a href="https://github.com/mfont-bz17/aa-linux#readme">README</a>
+    </p>
+  </footer>
+</main>
+</body>
+</html>

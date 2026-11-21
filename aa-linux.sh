@@ -16,8 +16,13 @@ Phone-side commands:
   wireless [OPTIONS]     Connect to a real car (default display: test)
   self-test              Run local protocol tests
   dev-cert               Check the local DHU test identity
-  desktop               Start a virtual Xvfb display on :99 (1280x720x24) and run the DHU over TCP
-  dev-desktop           Start a Xephyr instance on :99 (1280x720) with the workspace window manager
+  desktop [--grid FILE]  Start a virtual Xvfb display on :99 (1280x720x24) and run the DHU over TCP
+  dev-desktop [--grid FILE] [--resolution WxH]
+                         Start a Xephyr instance on :99 with the workspace window manager
+                         --grid starts ob-grid with FILE instead of config/app-grid.yaml
+                         --resolution sets the Xephyr screen size (default 1280x720)
+  dev-screenshot [OPTS] [OUTPUT]
+                         Capture the dev display (default :99) to a PNG
   scan-bt [SECONDS]      Scan for Bluetooth devices to find the car's MAC
   gadget-start           Start the dummy_hcd USB gadget (root required)
   gadget-stop            Stop the dummy_hcd USB gadget (root required)
@@ -49,6 +54,56 @@ _display_wait() {
     return 1
 }
 
+# Pull --grid FILE out of the desktop arguments. The remaining args are kept
+# in AA_GRID_ARGS so `desktop` can still pass its aa-linux options through.
+AA_GRID=""
+AA_GRID_ARGS=()
+_parse_grid_args() {
+    while (($#)); do
+        case "$1" in
+            --grid|--app-grid)
+                (($# >= 2)) || {
+                    printf 'Missing value for %s.\n' "$1" >&2
+                    return 2
+                }
+                AA_GRID=$2
+                shift 2
+                ;;
+            --grid=*|--app-grid=*)
+                AA_GRID=${1#*=}
+                if [[ -z "$AA_GRID" ]]; then
+                    printf 'Missing value for %s.\n' "${1%%=*}" >&2
+                    return 2
+                fi
+                shift
+                ;;
+            *)
+                AA_GRID_ARGS+=("$1")
+                shift
+                ;;
+        esac
+    done
+    if [[ -n "$AA_GRID" ]]; then
+        if [[ ! -f "$AA_GRID" ]]; then
+            printf 'Grid file not found: %s\n' "$AA_GRID" >&2
+            return 2
+        fi
+        # Resolve relative to the caller, not to the openbox workspace cwd.
+        AA_GRID=$(CDPATH= cd -- "$(dirname -- "$AA_GRID")" && pwd)/$(basename -- "$AA_GRID")
+        export AA_APP_GRID="$AA_GRID"
+    fi
+}
+
+AA_RESOLUTION=1280x720
+_set_resolution() {
+    if [[ ! "$1" =~ ^([0-9]+)x([0-9]+)$ ]] ||
+       ((BASH_REMATCH[1] <= 0 || BASH_REMATCH[2] <= 0)); then
+        printf 'Invalid resolution: %s (expected WIDTHxHEIGHT, e.g. 1920x1080).\n' "$1" >&2
+        return 2
+    fi
+    AA_RESOLUTION=$1
+}
+
 if (($# == 0)); then
     usage
     exit 0
@@ -68,6 +123,7 @@ case "$command" in
         _run_aa_linux --transport "$transport" --display test "$@"
         ;;
     desktop)
+        _parse_grid_args "$@" || exit 2
         if ! command -v Xvfb >/dev/null 2>&1; then
             printf '%s\n' 'Xvfb not found (sudo apt install xvfb).' >&2
             exit 1
@@ -100,15 +156,37 @@ case "$command" in
         }
         trap cleanup EXIT INT TERM
         "$PYTHON" -m aa-linux --cert "$DEV_CERT" --key "$DEV_KEY" \
-            --transport tcp --display "${display}.0+0,0" "$@"
+            --transport tcp --display "${display}.0+0,0" "${AA_GRID_ARGS[@]}"
         ;;
     dev-desktop)
+        _parse_grid_args "$@" || exit 2
+        while ((${#AA_GRID_ARGS[@]})); do
+            arg=${AA_GRID_ARGS[0]}
+            AA_GRID_ARGS=("${AA_GRID_ARGS[@]:1}")
+            case "$arg" in
+                --resolution|--size|-r)
+                    ((${#AA_GRID_ARGS[@]})) || {
+                        printf 'Missing value for %s.\n' "$arg" >&2
+                        exit 2
+                    }
+                    _set_resolution "${AA_GRID_ARGS[0]}" || exit 2
+                    AA_GRID_ARGS=("${AA_GRID_ARGS[@]:1}")
+                    ;;
+                --resolution=*|--size=*)
+                    _set_resolution "${arg#*=}" || exit 2
+                    ;;
+                *)
+                    printf 'Unknown argument for dev-desktop: %s\n' "$arg" >&2
+                    exit 2
+                    ;;
+            esac
+        done
         if ! command -v Xephyr >/dev/null 2>&1; then
             printf '%s\n' 'Xephyr not found (sudo apt install xephyr).' >&2
             exit 1
         fi
         display=":99"
-        setsid Xephyr "$display" -screen 1280x720 -br -ac -nolisten tcp >/dev/null 2>&1 &
+        setsid Xephyr "$display" -screen "$AA_RESOLUTION" -br -ac -nolisten tcp >/dev/null 2>&1 &
         xephyr_pid=$!
         if ! _display_wait "$display"; then
             printf '%s\n' "Xephyr did not start on $display." >&2
@@ -124,6 +202,60 @@ case "$command" in
         }
         trap cleanup EXIT INT TERM
         wait "$wm_pid"
+        ;;
+    dev-screenshot)
+        display=":99"
+        output=""
+        while (($#)); do
+            case "$1" in
+                -d|--display)
+                    (($# >= 2)) || {
+                        printf '%s\n' 'Missing value for --display.' >&2
+                        exit 2
+                    }
+                    display=$2
+                    shift 2
+                    ;;
+                -h|--help)
+                    printf 'Usage: %s dev-screenshot [--display DISPLAY] [OUTPUT]\n' "$0"
+                    exit 0
+                    ;;
+                -*)
+                    printf 'Unknown option: %s\n' "$1" >&2
+                    exit 2
+                    ;;
+                *)
+                    output=$1
+                    shift
+                    ;;
+            esac
+        done
+        if ! command -v ffmpeg >/dev/null 2>&1; then
+            printf '%s\n' 'ffmpeg not found (sudo apt install ffmpeg).' >&2
+            exit 1
+        fi
+        if [[ -z "$output" ]]; then
+            mkdir -p "$ROOT/screenshots"
+            output="$ROOT/screenshots/dev-$(date +%Y%m%d-%H%M%S).png"
+        else
+            [[ "$output" == *.* ]] || output="${output}.png"
+            mkdir -p "$(dirname -- "$output")"
+        fi
+        grab_display=$display
+        [[ "$grab_display" == *.* ]] || grab_display="${grab_display}.0"
+        size=""
+        if command -v xrandr >/dev/null 2>&1; then
+            size=$(DISPLAY="$display" xrandr --current 2>/dev/null |
+                awk '/\*/ {print $1; exit}')
+        fi
+        args=(-hide_banner -loglevel error -f x11grab -draw_mouse 0)
+        [[ -n "$size" ]] && args+=(-video_size "$size")
+        args+=(-i "$grab_display" -frames:v 1 -update 1 -y "$output")
+        if ! ffmpeg "${args[@]}"; then
+            printf 'Could not capture display %s (is it running?).\n' "$display" >&2
+            exit 1
+        fi
+        printf 'Saved screenshot: %s\n' "$output"
         ;;
     self-test)
         "$PYTHON" -m unittest discover -s "$ROOT/tests"

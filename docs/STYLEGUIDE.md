@@ -6,7 +6,7 @@ The reference implementation is:
 - `docs/index.html`
 - `docs/assets/style.css`
 - `docs/assets/site.js`
-- `docs/brand/assets/logo-icon.svg`
+- `docs/artwork/assets/logo-icon.svg`
 - `docs/assets/og.jpg`
 - `docs/assets/screenshots/*`
 - `docs/.nojekyll`
@@ -22,7 +22,7 @@ product landing page.
 
 - Lead with technical information, not a marketing headline.
 - Use a flat terminal interface: monospace type, square borders, muted panels,
-  and a single Debian-red brand accent.
+  and a single Debian-red accent.
 - Keep the page dense and scannable.
 - Prefer tables, code blocks, diagrams, lists, and exact commands.
 - State limitations and experimental status plainly.
@@ -137,7 +137,7 @@ Reference:
 <header class="topbar">
   <div class="wrap topbar-inner">
     <a class="brand" href="#top" aria-label="aa-linux home">
-      <img src="brand/assets/logo-icon.svg" width="50" height="50" alt="">
+      <img src="artwork/assets/logo-icon.svg" width="50" height="50" alt="">
       <span>aa-linux</span>
     </a>
     <span class="state state--warn topbar-state">experimental</span>
@@ -156,10 +156,10 @@ Reference:
 ```
 
 - Sticky, `66px` minimum height, flat `--bg`, bottom border `--line-strong`.
-- Brand uses the R1 icon at 50px plus the `aa-linux` wordmark.
+- The header uses the icon at 50px plus the `aa-linux` wordmark.
 - Keep only 3–4 top-level anchors. The sidebar carries the full contents.
 - Top navigation is hidden below `760px`.
-- The favicon uses the R1 icon at `docs/brand/assets/logo-icon.svg`.
+- The favicon uses the icon at `docs/artwork/assets/logo-icon.svg`.
 
 ### Sidebar
 
@@ -291,7 +291,7 @@ Markup:
 - Square corners.
 - Default button: transparent background, `--line-strong` border.
 - Primary button: filled `--brand` red, white text.
-- Hover: invert to brand red or light text as appropriate.
+- Hover: invert to the red accent or light text as appropriate.
 - Use buttons for direct actions/links, not marketing calls to action.
 
 ### Specification table
@@ -579,7 +579,7 @@ Do not reintroduce:
 - [ ] Reuse the `:root` token block from `docs/assets/style.css`.
 - [ ] Keep all text monospace and body size 15px.
 - [ ] Keep `border-radius: 0`.
-- [ ] Use the R1 icon plus wordmark for the brand; `>` for the active sidebar; `$` for the breadcrumb.
+- [ ] Use the icon plus wordmark in the header; `>` for the active sidebar; `$` for the breadcrumb.
 - [ ] Use bracketed tags/states via CSS pseudo-elements.
 - [ ] Use dotted-underlined text links with inverted hover.
 - [ ] Use full-grid tables and stacked table rows at ≤620px.
@@ -597,10 +597,10 @@ Copy this into a new agent task when building another page in the same style:
 > Build a static documentation page for `aa-linux` using the style system in
 > `docs/STYLEGUIDE.md`. Use `docs/index.html` and `docs/assets/style.css` as
 > references. Keep the page technical and research-oriented: flat dark
-> `#222225` palette with Debian-red brand accents (`#d70a53` / `#ff6b9d`),
+> `#222225` palette with Debian-red accents (`#d70a53` / `#ff6b9d`),
 > all-monospace typography, square borders,
 > no gradients, no marketing hero, no numbered section headings. Use the
-> R1 icon plus the `aa-linux` wordmark for the brand, `>` for the active sidebar
+> icon plus the `aa-linux` wordmark in the header, `>` for the active sidebar
 > link in `--link` red, `$` for the breadcrumb,
 > CSS-generated bracket status tags, dotted-underlined links with inverted
 > hover, full-grid tables that stack on mobile, inline code with backticks,

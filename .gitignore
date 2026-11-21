@@ -4,6 +4,7 @@ openbox-desktop/.fehbg
 openbox-desktop/config/dconf
 openbox-desktop/config/enchant
 openbox-desktop/config/ibus
+openbox-desktop/config/wallpaper/current
 openbox-desktop/runtime/
 # Byte-compiled / optimized / DLL files
 __pycache__/

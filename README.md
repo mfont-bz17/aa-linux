@@ -1,12 +1,12 @@
 # aa-linux
 
 **Project site:**
-[mfont-bz17.github.io/aa-linux](https://mfont-bz17.github.io/aa-linux/) —
+[aa-linux](https://mfont-bz17.github.io/aa-linux/) —
 screenshots, architecture, build notes, and current status.
 
-**Brand assets:**
-[docs/brand/index.html](docs/brand/index.html) — selected R1 mark, variants,
-lockups, and downloads.
+**Artwork:**
+[aa-linux artwork](https://mfont-bz17.github.io/aa-linux/artwork/index.html) — logo, variants, lockups,
+color themes, wallpapers, and downloads.
 
 `aa-linux` is a Linux phone-side implementation of the Android Auto protocol.
 It plays the role of the Android phone in an Android Auto session: it
@@ -48,7 +48,7 @@ The current implementation supports:
 - [ ] Improve ob-grid launcher
 - [ ] Audio streaming from Pipewire
 - [x] On screen keyboard
-- [ ] Desktop color theme
+- [x] Desktop color theme
 - [ ] Hide the cursor when needed
 - [ ] Add NMEA service for GeoClue2
 - [ ] Show car sensor in desktop
@@ -85,6 +85,15 @@ DISPLAY=:99 firefox &
 # Or: DISPLAY=:99 xterm &
 ```
 
+Capture the virtual display to a PNG with:
+
+```sh
+./aa-linux.sh dev-screenshot
+# writes screenshots/dev-<timestamp>.png
+
+./aa-linux.sh dev-screenshot --display :99 screenshots/desktop.png
+```
+
 ### openbox Desktop Environment
 
 `openbox-desktop` is a full desktop environment for the aa-linux project: a
@@ -102,6 +111,9 @@ bar's keyboard button (`Onboard.qml`) toggles its visibility over D-Bus
 (`org.onboard.Onboard.Keyboard.ToggleVisible`), with a small `dbus-fast` helper
 (`config/scripts/onboard-watch`) tracking the keyboard's real `Visible` state so
 the icon reflects how the keyboard is shown or hidden, no matter the method.
+Its color scheme is generated from the active desktop palette by
+`config/scripts/onboard-theme`, which renders `onboard/themes/aa-linux.colors`
+from `aa-linux.colors.template` and reloads Onboard in place.
 
 Launch it with `openbox-desktop.sh`, which starts the environment on the `:99`
 virtual display:
@@ -112,6 +124,25 @@ virtual display:
 
 `aa-linux.sh desktop` starts the same environment headlessly on Xvfb and runs
 the phone-side TCP transport capturing it.
+
+Pass `--grid FILE` to either desktop command to use a different ob-grid
+layout. The included `openbox-desktop/config/app-grid-maps-music.yaml` opens GNOME Maps and
+Amberol side by side on workspace 1:
+
+```sh
+./aa-linux.sh dev-desktop --grid openbox-desktop/config/app-grid-maps-music.yaml
+./aa-linux.sh desktop --grid openbox-desktop/config/app-grid-maps-music.yaml
+```
+
+When launching `openbox-desktop.sh` directly, set
+`AA_APP_GRID=/path/to/grid.yaml` instead.
+
+For a live Xephyr window instead of headless Xvfb, use `dev-desktop`. Pass
+`--resolution WxH` to change the virtual screen size (default `1280x720`):
+
+```sh
+./aa-linux.sh dev-desktop --resolution 1920x1080
+```
 
 ![Desktop environment screenshot](screenshots/1.png)
 ![Desktop environment screenshot](screenshots/5.png)

@@ -1,0 +1,17 @@
+# Maps + music driving layout.
+#
+#   ./aa-linux.sh dev-desktop --grid openbox-desktop/config/app-grid-maps-music.yaml
+#   ./aa-linux.sh desktop     --grid openbox-desktop/config/app-grid-maps-music.yaml
+#
+# Requires gnome-maps and amberol in the workspace image.
+#
+# Both are single-instance GTK applications: launching them again just
+# presents the existing window, so each app appears once in this grid.
+gap: 10
+
+workspaces:
+  - id: 1
+    name: drive
+    layout:
+      - [gnome-maps, amberol]
+    col_weights: [5, 3]

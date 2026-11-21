@@ -2,39 +2,36 @@
 
 <!--
 aa-linux color scheme for Onboard.
-Palette sourced from QuickShell's Theme.qml (github_dark defaults):
-  bg        #0d1117
-  altbg     #161b22
-  fg        #c9d1d9
-  border    #30363d
-  primary   #58a6ff
-  secondary #8b949e
-  alert     #f85149
-  disabled  #484f58
-Additional GitHub-Dark-derived tones:
-  hover     #21262d
-  active    #484f58
+GENERATED FILE — edit aa-linux.colors.template and theme/colors.ini instead.
+Rendered by scripts/onboard-theme from the active desktop palette.
 -->
 
 <color_scheme name="aa-linux" format="2.0">
-    <layer> <color element="background" rgb="#0d1117" opacity="1.0"/> </layer>
+    <layer> <color element="background" rgb="#222225" opacity="1.0"/> </layer>
 
     <!-- default key group: altbg keys, light text, subtle border -->
     <key_group>
-        <color element="fill"   rgb="#161b22"/>
-        <color element="stroke" rgb="#30363d"/>
-        <color element="label"  rgb="#c9d1d9"/>
-        <color element="dwell-progress" rgb="#58a6ff"/>
+        <color element="fill"   rgb="#26262a"/>
+        <color element="stroke" rgb="#3f3f44"/>
+        <color element="label"  rgb="#e8e9ed"/>
+        <color element="dwell-progress" rgb="#d70a53"/>
 
-        <!-- hover: lighter gray -->
+        <!-- hover: raised surface -->
         <key_group>
-            <color element="fill" active="true" locked="false" rgb="#21262d"/>
+            <color element="fill" active="true" locked="false" rgb="#2e2e32"/>
         </key_group>
 
-        <!-- pressed/active: primary accent -->
+        <!-- pressed/active: theme primary with readable label -->
         <key_group>
-            <color element="fill" active="true" locked="true" rgb="#58a6ff"/>
-            <color element="label" active="true" locked="true" rgb="#0d1117"/>
+            <color element="fill" active="true" locked="true" rgb="#d70a53"/>
+            <color element="label" active="true" locked="true" rgb="#ffffff"/>
+        </key_group>
+
+        <!-- primary glyphs only: keep the normal raised key background -->
+        <key_group>
+            <color element="fill" rgb="#2e2e32"/>
+            <color element="label" rgb="#d70a53"/>
+            LFSH, RTSH, BKSP, RTRN, KPEN, TAB, CAPS, DELE.next-to-backspace
         </key_group>
 
         F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12,
@@ -47,30 +44,30 @@ Additional GitHub-Dark-derived tones:
 
         <!-- spelling suggestions -->
         <key_group>
-            <color element="fill"  rgb="#21262d"/>
-            <color element="label" rgb="#58a6ff"/>
+            <color element="fill"  rgb="#2e2e32"/>
+            <color element="label" rgb="#ff6b9d"/>
             correctionsbg,
             correction
         </key_group>
 
         <!-- muted disabled glyphs -->
         <key_group>
-            <color element="label" rgb="#484f58"/>
+            <color element="label" rgb="#5c5c64"/>
             icon1, icon2
         </key_group>
 
-        <!-- number row + numpad: secondary tone -->
+        <!-- number row + numpad: sunken tone -->
         <key_group>
-            <color element="fill" rgb="#1b2126"/>
+            <color element="fill" rgb="#1b1b1d"/>
             ESC,
             AE01, AE02, AE03, AE04, AE05, AE06, AE07, AE08, AE09, AE10, AE11, AE12,
             KP1, KP2, KP3, KP4, KP5, KP6, KP7, KP8, KP9,
         </key_group>
 
-        <!-- bottom row modifiers: disabled/muted fill -->
+        <!-- bottom row modifiers: raised fill, secondary labels -->
         <key_group>
-            <color element="fill" rgb="#21262d"/>
-            <color element="label" rgb="#8b949e"/>
+            <color element="fill" rgb="#2e2e32"/>
+            <color element="label" rgb="#e5c07b"/>
             RCTL, LCTL, RALT, LALT, LWIN, RWIN, MENU,
             LEFT, RGHT, UP, DOWN,
             KP0, KPDL,
@@ -78,25 +75,25 @@ Additional GitHub-Dark-derived tones:
             quit
         </key_group>
 
-        <!-- space + shifts: primary accent -->
+        <!-- space: raised fill -->
         <key_group>
-            <color element="fill" rgb="#21262d"/>
-            SPCE, LFSH, RTSH,
+            <color element="fill" rgb="#2e2e32"/>
+            SPCE,
             settings
         </key_group>
 
-        <!-- enter-ish keys: alert tone -->
+        <!-- remaining action keys: raised fill, alert labels -->
         <key_group>
-            <color element="fill" rgb="#21262d"/>
-            <color element="label" rgb="#58a6ff"/>
-            BKSP, DELE.next-to-backspace, TAB, CAPS, RTRN, KPEN, NMLK,
+            <color element="fill" rgb="#2e2e32"/>
+            <color element="label" rgb="#ff6b9d"/>
+            NMLK,
             layer.like_rtrn, LFSH.like_rtrn
         </key_group>
 
-        <!-- snippets -->
+        <!-- snippets: raised fill, primary outline -->
         <key_group>
-            <color element="fill" rgb="#21262d"/>
-            <color element="stroke" rgb="#58a6ff"/>
+            <color element="fill" rgb="#2e2e32"/>
+            <color element="stroke" rgb="#d70a53"/>
             m0, m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, m14, m15
         </key_group>
     </key_group>

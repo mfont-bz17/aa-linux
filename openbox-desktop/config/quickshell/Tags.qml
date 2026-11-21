@@ -88,6 +88,7 @@ Item {
     Column {
         id: tagCol
         visible: root.vertical
+        width: parent.width
         spacing: 4
         anchors.horizontalCenter: parent.horizontalCenter
 
@@ -101,7 +102,7 @@ Item {
                 readonly property bool occupied: (Wm.occtags & (1 << index)) !== 0
                 readonly property bool urgent: (Wm.urgtags & (1 << index)) !== 0
 
-                width: Math.round(22 * Theme.barScale)
+                width: parent.width
                 height: Math.round((selected ? 30 : occupied ? 22 : 12) * Theme.barScale)
                 radius: Math.round(7 * Theme.barScale)
                 anchors.horizontalCenter: parent.horizontalCenter

@@ -14,7 +14,9 @@ IMG="$1" BG="$2"
 exec 9>"${XDG_RUNTIME_DIR:-/tmp}/set-wallpaper.lock"
 flock -w 60 9 || echo "set-wallpaper: lock timeout, proceeding unlocked" >&2
 
-# 6. Wallpaper now + persisted into autostart so it survives logins. The
-#    dunst symlink follows the active session's config.
+# 6. Wallpaper now + persist the choice outside the tracked config so
+#    switching wallpapers doesn't dirty autostart in git. autostart reads
+#    wallpaper/current on the next login.
 feh --bg-fill "$IMG"
-sed -i "s|feh --bg-fill.*|feh --bg-fill \$XDG_CONFIG_HOME/wallpaper/$(basename "$IMG") \&|" "$XDG_CONFIG_HOME/autostart"
+mkdir -p "$XDG_CONFIG_HOME/wallpaper"
+printf '%s\n' "$(basename "$IMG")" > "$XDG_CONFIG_HOME/wallpaper/current"

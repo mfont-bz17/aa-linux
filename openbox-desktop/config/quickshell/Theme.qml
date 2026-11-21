@@ -3,14 +3,13 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// Live palette sourced from the bspwm theme switcher. The switcher rewrites
-// polybar/colors.ini (and colors.sh) in place on every switch, so watching
-// that file re-colors the bar with no restart — polybar itself can be
-// retired without breaking this. Defaults are github_dark placeholders.
+// Live desktop palette. The wallpaper picker's color-theme swatches write
+// theme/colors.ini, and watching that file recolors the bar with no restart.
+// Defaults mirror the aa-linux brand palette.
 //
-// The polybar palette is smaller than dwm's xresources+ANSI set, so the
-// semantic names below collapse onto it: red→alert, yellow→primary,
-// blue/green/cyan/magenta→secondary. Cohesive by construction.
+// The palette is intentionally small, so the semantic names below collapse
+// onto it: red→alert, yellow→primary, blue/green/cyan/magenta→secondary.
+// Cohesive by construction.
 Singleton {
     id: root
 
@@ -42,14 +41,14 @@ Singleton {
         onTriggered: root._barStateLoads = 3
     }
 
-    property color bg: "#0d1117"
-    property color altbg: "#161b22"
-    property color fg: "#c9d1d9"
-    property color border: "#30363d"
-    property color primary: "#58a6ff"
-    property color secondary: "#8b949e"
-    property color alert: "#f85149"
-    property color disabled: "#484f58"
+    property color bg: "#222225"
+    property color altbg: "#26262a"
+    property color fg: "#e8e9ed"
+    property color border: "#3f3f44"
+    property color primary: "#d70a53"
+    property color secondary: "#e5c07b"
+    property color alert: "#ff6b9d"
+    property color disabled: "#5c5c64"
 
     readonly property color accent: primary
     readonly property color selbg: primary
@@ -114,7 +113,7 @@ Singleton {
     }
 
     FileView {
-        path: root.configDir + "/polybar/colors.ini"
+        path: root.configDir + "/theme/colors.ini"
         watchChanges: true
         onFileChanged: reload()
         onLoaded: root.parseIni(text())

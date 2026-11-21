@@ -37,7 +37,7 @@ dirs should show only the files listed as WM-specific.
 `Weather.qml` `WeatherPopup.qml` `NotifyPopup.qml` `Network.qml`
 `CalendarPopup.qml` `Clock.qml` `Media.qml` `Metrics.qml` `Volume.qml`
 `Tray.qml` `Bell.qml` `CapsLock.qml` `Screenshot.qml` `PowerButton.qml`
-`Launcher.qml` `Title.qml` `Sys.qml` — plus `scripts/wallpaper-theme` (all
+`Launcher.qml` `AaMark.qml` `ColorThemes.qml` `Title.qml` `Sys.qml` — plus `scripts/wallpaper-theme` (all
 but its WM tail), `scripts/network`, `scripts/bar`, and the
 `quickshell-network/` app.
 
@@ -56,19 +56,27 @@ but its WM tail), `scripts/network`, `scripts/bar`, and the
   and runs `openbox --reconfigure`.
 
 **Interfaces that must never drift between projects:**
-- `polybar/colors.ini` palette keys (background, background-alt, foreground,
+- `theme/colors.ini` palette keys (background, background-alt, foreground,
   primary, secondary, alert, disabled, border) — Theme.qml's watch target.
 - `wallpaper-theme <image> <8 semantic> <16 ansi>` argument order.
 - IPC targets: `wallpapers` (toggle/random/set), `tweaks` (toggle),
   `wm` (refreshLayout, bspwm only).
-- Script names in `scripts/`: wallpaper-theme, network, bar (+ layout on
-  bspwm).
+- Script names in `scripts/`: wallpaper-theme, onboard-theme, network, bar
+  (+ layout on bspwm).
 
 ## Live theming
 
-`Theme.qml` watches `polybar/colors.ini`, which `scripts/wallpaper-theme`
-rewrites on every wallpaper pick — the bar re-colors in place, no restart.
-The picker extracts the palette in QML (Canvas histogram; fidelity mode for
+`Theme.qml` watches `theme/colors.ini`, so palette writes recolor the bar
+in place with no restart. The wallpaper picker's color-theme strip writes
+that file directly from `ColorThemes.qml` presets; the reference
+`scripts/wallpaper-theme` rewrites it on wallpaper pick instead. The
+**Custom** swatch expands an inline saturation/brightness field plus hue
+strip, so a custom accent can be picked visually without leaving the panel.
+Onboard follows the same palette: `scripts/onboard-theme` renders
+`onboard/themes/aa-linux.colors` from its template and bounces the
+`org.onboard.theme-settings color-scheme` GSetting to reload the keyboard
+without a restart.
+The picker also extracts a palette in QML (Canvas histogram; fidelity mode for
 flat designed art, pastel interpretation for photos). A beacon check runs
 first: a small, bright, hue-distinct cluster — a lamp, neon sign, sunset
 sliver — becomes the accent even though it barely registers in the
@@ -135,7 +143,7 @@ profiles.
   trees running — never trust it for behavior changes.
 - Debug: `scripts/bar log` · IPC surface: `scripts/bar ipc show`.
 
-## Fallback
+## Recovery
 
-Uncomment the polybar line in `autostart` and comment the qs line. If
-quickshell misbehaves: `scripts/bar restart`.
+If quickshell misbehaves: `scripts/bar restart`. Use `scripts/bar log` for
+the running log.

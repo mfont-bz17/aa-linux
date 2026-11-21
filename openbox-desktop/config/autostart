@@ -1,10 +1,22 @@
 picom --config $XDG_CONFIG_HOME/picom/picom.conf -b &
-feh --bg-fill $XDG_CONFIG_HOME/wallpaper/1.jpg &
+# Restore the wallpaper picked by WallpaperPicker.qml. The selection lives
+# outside autostart so changing it never dirties this file in git.
+wallpaper=aa-linux-redline.jpg
+if [ -r "$XDG_CONFIG_HOME/wallpaper/current" ]; then
+    IFS= read -r saved < "$XDG_CONFIG_HOME/wallpaper/current" || true
+    [ -n "$saved" ] && wallpaper=$saved
+fi
+[ -f "$XDG_CONFIG_HOME/wallpaper/$wallpaper" ] || wallpaper=aa-linux-redline.jpg
+feh --bg-fill "$XDG_CONFIG_HOME/wallpaper/$wallpaper" &
 
 qs -p $XDG_CONFIG_HOME/quickshell -d -n >/dev/null 2>&1 &
 # Openbox clamps the freshly mapped bar into rc.xml <margins>; snap it back
 # to the monitor edge (see scripts/bar for the full story).
 $XDG_CONFIG_HOME/scripts/bar place >/dev/null 2>&1 &
-sleep 1 && $XDG_CONFIG_HOME/scripts/ob-grid $XDG_CONFIG_HOME/app-grid.yaml &
+sleep 1 && "$XDG_CONFIG_HOME/scripts/ob-grid" "${AA_APP_GRID:-$XDG_CONFIG_HOME/app-grid.yaml}" &
+# Render Onboard's generated color scheme before it starts. The bar may
+# already be running its own refresh, so wait for that process to finish
+# before Onboard reads the scheme. It is normally a very short run.
+$XDG_CONFIG_HOME/scripts/onboard-theme >/dev/null 2>&1 || true
 env -u XDG_DATA_HOME onboard &
 

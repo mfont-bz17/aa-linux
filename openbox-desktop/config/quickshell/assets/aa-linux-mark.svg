@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">aa-linux mark</title>
+  <!-- {{MARK}} and {{CURSOR}} are replaced at runtime by AaMark.qml so the
+       mark follows the live Quickshell theme palette. -->
+  <path d="M13 52 L32 12 L51 52" fill="none" stroke="{{MARK}}" stroke-width="7"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="27" y="58" width="10" height="2.5" fill="{{CURSOR}}"/>
+</svg>
